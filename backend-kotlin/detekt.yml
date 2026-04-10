@@ -1,0 +1,33 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: false
+
+style:
+  MagicNumber:
+    active: false
+  WildcardImport:
+    active: true
+  ReturnCount:
+    active: false
+  ThrowsCount:
+    active: false
+  MaxLineLength:
+    active: false
+  UseCheckOrError:
+    active: false
+
+complexity:
+  LongMethod:
+    active: false
+  LongParameterList:
+    functionThreshold: 8
+  ComplexCondition:
+    active: false
+  TooManyFunctions:
+    active: false
+
+performance:
+  SpreadOperator:
+    active: false

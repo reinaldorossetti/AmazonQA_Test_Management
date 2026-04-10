@@ -137,3 +137,12 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Kotlin/Spring backend build artifacts
+backend-kotlin/.gradle/
+backend-kotlin/build/
+
+# Test and report artifacts (Gradle/Allure)
+backend-kotlin/build/reports/
+backend-kotlin/build/allure/
+backend-kotlin/build/allure-results/

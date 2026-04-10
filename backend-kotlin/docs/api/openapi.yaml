@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Amazon QA Backend API
+  version: v1
+  description: API contract for Amazon QA Test Case Management backend.
+servers:
+  - url: /api/v1
+paths:
+  /auth/login:
+    post: {summary: Login, responses: {'200': {description: OK}}}
+  /auth/refresh:
+    post: {summary: Refresh token, responses: {'200': {description: OK}}}
+  /auth/logout:
+    post: {summary: Logout, responses: {'200': {description: OK}}}
+  /users/me:
+    get: {summary: Get current user, responses: {'200': {description: OK}}}
+  /users/me/preferences:
+    patch: {summary: Update current user preferences, responses: {'200': {description: OK}}}
+  /admin/users:
+    post: {summary: Create user, responses: {'200': {description: OK}}}
+    get: {summary: List users, responses: {'200': {description: OK}}}
+  /admin/users/{userId}:
+    get: {summary: Get user by id, responses: {'200': {description: OK}}}
+    patch: {summary: Update user by id, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete user by id, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/status:
+    patch: {summary: Change user status, responses: {'200': {description: OK}}}
+  /admin/roles:
+    get: {summary: List roles, responses: {'200': {description: OK}}}
+  /admin/permissions:
+    get: {summary: List permissions, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/roles:
+    get: {summary: List user roles, responses: {'200': {description: OK}}}
+    post: {summary: Assign global role, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/roles/{role}:
+    delete: {summary: Remove global role, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/scoped-roles:
+    post: {summary: Assign scoped role, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/scoped-roles/{role}:
+    delete: {summary: Remove scoped role, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/effective-permissions:
+    get: {summary: List effective permissions, responses: {'200': {description: OK}}}
+  /projects:
+    post: {summary: Create project, responses: {'200': {description: OK}}}
+    get: {summary: List projects, responses: {'200': {description: OK}}}
+  /projects/{projectId}:
+    get: {summary: Get project by id, responses: {'200': {description: OK}}}
+    patch: {summary: Update project, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete project, responses: {'200': {description: OK}}}
+  /projects/{projectId}/restore:
+    post: {summary: Restore project, responses: {'200': {description: OK}}}
+  /projects/{projectId}/requirements:
+    post: {summary: Create requirement, responses: {'200': {description: OK}}}
+    get: {summary: List requirements, responses: {'200': {description: OK}}}
+  /projects/{projectId}/requirements/import:
+    post: {summary: Import requirements, responses: {'200': {description: OK}}}
+  /projects/{projectId}/requirements/{requirementId}:
+    get: {summary: Get requirement, responses: {'200': {description: OK}}}
+    patch: {summary: Update requirement, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete requirement, responses: {'200': {description: OK}}}
+  /projects/{projectId}/requirements/{requirementId}/restore:
+    post: {summary: Restore requirement, responses: {'200': {description: OK}}}
+  /projects/{projectId}/requirements/{requirementId}/coverage:
+    get: {summary: Get requirement coverage, responses: {'200': {description: OK}}}
+  /projects/{projectId}/traceability-matrix:
+    get: {summary: Build traceability matrix, responses: {'200': {description: OK}}}
+  /projects/{projectId}/suites:
+    post: {summary: Create suite, responses: {'200': {description: OK}}}
+  /projects/{projectId}/suites/{suiteId}:
+    get: {summary: Get suite, responses: {'200': {description: OK}}}
+    patch: {summary: Update suite, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete suite, responses: {'200': {description: OK}}}
+  /projects/{projectId}/suites/{suiteId}/restore:
+    post: {summary: Restore suite, responses: {'200': {description: OK}}}
+  /projects/{projectId}/suites/tree:
+    get: {summary: Suite tree, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases:
+    post: {summary: Create test case, responses: {'200': {description: OK}}}
+    get: {summary: List test cases, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/{testCaseId}:
+    get: {summary: Get test case, responses: {'200': {description: OK}}}
+    patch: {summary: Update test case, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete test case, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/{testCaseId}/restore:
+    post: {summary: Restore test case, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/{testCaseId}/versions:
+    post: {summary: Create test case version, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/bulk:
+    patch: {summary: Bulk update test cases, responses: {'200': {description: OK}}}
+  /projects/{projectId}/builds:
+    post: {summary: Create build, responses: {'200': {description: OK}}}
+  /projects/{projectId}/builds/{buildId}:
+    get: {summary: Get build, responses: {'200': {description: OK}}}
+    patch: {summary: Update build, responses: {'200': {description: OK}}}
+    delete: {summary: Delete draft build, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-plans:
+    post: {summary: Create test plan, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-plans/{planId}:
+    get: {summary: Get test plan, responses: {'200': {description: OK}}}
+    patch: {summary: Update test plan, responses: {'200': {description: OK}}}
+    delete: {summary: Delete draft plan, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-plans/{planId}/runs:
+    post: {summary: Create run, responses: {'200': {description: OK}}}
+  /executions/{executionId}/status:
+    post: {summary: Update execution status, responses: {'200': {description: OK}}}
+  /executions/{executionId}/attachments:
+    post: {summary: Attach evidence, responses: {'200': {description: OK}}}
+  /builds/{buildId}/close:
+    patch: {summary: Close build, responses: {'200': {description: OK}}}
+  /projects/{projectId}/defects:
+    get: {summary: List defects, responses: {'200': {description: OK}}}
+  /projects/{projectId}/defects/{defectId}:
+    get: {summary: Get defect, responses: {'200': {description: OK}}}
+    patch: {summary: Update defect, responses: {'200': {description: OK}}}
+    delete: {summary: Soft delete defect, responses: {'200': {description: OK}}}
+  /executions/{executionId}/defects/jira:
+    post: {summary: Create Jira issue from execution, responses: {'200': {description: OK}}}
+  /admin/integrations/jira/config:
+    post: {summary: Save Jira integration configuration, responses: {'200': {description: OK}}}
+  /admin/integrations/jira/verify:
+    get: {summary: Verify Jira integration configuration, responses: {'200': {description: OK}}}
+  /projects/{projectId}/metrics:
+    get: {summary: Get project operational metrics, responses: {'200': {description: OK}}}
+  /projects/{projectId}/reports/coverage:
+    get: {summary: Export coverage report, responses: {'200': {description: OK}}}
+  /projects/{projectId}/reports/execution:
+    get: {summary: Export execution report, responses: {'200': {description: OK}}}
+  /projects/{projectId}/reports/jobs:
+    post: {summary: Create report job, responses: {'200': {description: OK}}}
+  /projects/{projectId}/reports/jobs/{jobId}:
+    get: {summary: Get report job status, responses: {'200': {description: OK}}}
+    delete: {summary: Cancel report job, responses: {'200': {description: OK}}}
+  /admin/audit-logs:
+    get: {summary: Query audit logs, responses: {'200': {description: OK}}}
