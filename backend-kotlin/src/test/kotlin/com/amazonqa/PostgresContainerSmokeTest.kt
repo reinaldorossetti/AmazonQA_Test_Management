@@ -9,7 +9,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers(disabledWithoutDocker = true)
 class PostgresContainerSmokeTest {
     @Container
-    private val postgres = PostgreSQLContainer("postgres:16-alpine")
+    private val postgres = PostgreSQLContainer("postgres:17.9")
 
     @Test
     fun `postgres container starts`() {

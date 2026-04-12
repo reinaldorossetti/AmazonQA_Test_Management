@@ -108,18 +108,42 @@ If using local compose from this README, use:
 
 ## Local PostgreSQL (optional)
 
-You can use this compose:
+This project includes `docker-compose.postgres.yml` with:
+
+- PostgreSQL `17.9`
+- automatic database creation using `POSTGRES_DB`
+- persistent data on host path `G:/AmazonQA_Test_Management/postgres-data`
+- automatic table creation on first startup via:
+  - `src/main/resources/db/migration/V1__init.sql`
+
+Start container:
+
+- `docker compose -f docker-compose.postgres.yml up -d`
+
+Stop container:
+
+- `docker compose -f docker-compose.postgres.yml down`
+
+Reset data and force DB/table re-initialization on next up:
+
+- `docker compose -f docker-compose.postgres.yml down`
+- remove folder `G:\AmazonQA_Test_Management\postgres-data`
+
+Equivalent compose content:
 
 ```yaml
 services:
   postgres:
-    image: postgres:16
+    image: postgres:17.9
     environment:
       POSTGRES_DB: amazonqa
       POSTGRES_USER: amazonqa
       POSTGRES_PASSWORD: amazonqa_password
     ports:
       - "5432:5432"
+    volumes:
+      - G:/AmazonQA_Test_Management/postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/db/migration/V1__init.sql:/docker-entrypoint-initdb.d/01-V1__init.sql:ro
 ```
 
 ## Auth Tokens for MVP
