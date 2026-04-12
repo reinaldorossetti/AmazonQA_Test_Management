@@ -126,10 +126,7 @@ From `backend-kotlin` folder:
 CI/CD publication:
 
 - Workflow: `.github/workflows/backend-kotlin-ci.yml`
-- On `push` to `main`, the pipeline publishes a reports hub page to GitHub Pages.
-- GitHub Pages entrypoint: `index.html` (hub with options API and Unit tests).
-- API option points to Allure report (`./api/index.html`).
-- Unit option points to Gradle HTML report (`./unit/index.html`).
+- On `push` to `main`, the pipeline publishes the Allure API report to GitHub Pages.
 - On PRs, the Allure report is kept as workflow artifact (`backend-kotlin-allure-report`).
 
 > If this is the first deployment, enable **GitHub Pages** in repository settings with source set to **GitHub Actions**.

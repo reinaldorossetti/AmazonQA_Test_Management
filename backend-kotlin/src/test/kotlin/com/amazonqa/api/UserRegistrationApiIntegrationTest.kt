@@ -68,6 +68,7 @@ class UserRegistrationApiIntegrationTest : ApiIntegrationTestBase() {
     @Test
     fun `admin can create and update full user profile`() {
         val email = "admin-create-${System.nanoTime()}@example.com"
+        val updatedEmail = "admin-update-${System.nanoTime()}@example.com"
 
         val userId =
             givenAdmin()
@@ -124,6 +125,31 @@ class UserRegistrationApiIntegrationTest : ApiIntegrationTestBase() {
         givenAdmin()
             .body(
                 mapOf(
+                    "person_type" to "PJ",
+                    "first_name" to "Quality",
+                    "last_name" to "Assurance",
+                    "email" to updatedEmail,
+                    "phone" to "+55 21 97777-0000",
+                    "cnpj" to "12345678000199",
+                    "company_name" to "QA Factory Updated",
+                    "residence_proof_filename" to "residence-proof-pj-v2.pdf",
+                ),
+            ).`when`()
+            .patch("/api/v1/admin/users/$userId/profile")
+            .then()
+            .statusCode(200)
+            .body("data.personType", equalTo("PJ"))
+            .body("data.firstName", equalTo("Quality"))
+            .body("data.lastName", equalTo("Assurance"))
+            .body("data.email", equalTo(updatedEmail))
+            .body("data.phone", equalTo("+55 21 97777-0000"))
+            .body("data.cnpj", equalTo("12345678000199"))
+            .body("data.companyName", equalTo("QA Factory Updated"))
+            .body("data.residenceProofFilename", equalTo("residence-proof-pj-v2.pdf"))
+
+        givenAdmin()
+            .body(
+                mapOf(
                     "address_zip" to "01310-100",
                     "address_street" to "Av Paulista",
                     "address_number" to "1000",
@@ -137,10 +163,10 @@ class UserRegistrationApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.personType", equalTo("PJ"))
-            .body("data.firstName", equalTo("QA"))
-            .body("data.lastName", equalTo("Company"))
-            .body("data.email", equalTo(email))
-            .body("data.companyName", equalTo("QA Factory"))
+            .body("data.firstName", equalTo("Quality"))
+            .body("data.lastName", equalTo("Assurance"))
+            .body("data.email", equalTo(updatedEmail))
+            .body("data.companyName", equalTo("QA Factory Updated"))
             .body("data.addressZip", equalTo("01310-100"))
             .body("data.addressStreet", equalTo("Av Paulista"))
             .body("data.addressNumber", equalTo("1000"))
@@ -155,12 +181,12 @@ class UserRegistrationApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.personType", equalTo("PJ"))
-            .body("data.firstName", equalTo("QA"))
-            .body("data.lastName", equalTo("Company"))
-            .body("data.email", equalTo(email))
-            .body("data.phone", equalTo("+55 21 98888-0000"))
+            .body("data.firstName", equalTo("Quality"))
+            .body("data.lastName", equalTo("Assurance"))
+            .body("data.email", equalTo(updatedEmail))
+            .body("data.phone", equalTo("+55 21 97777-0000"))
             .body("data.cnpj", equalTo("12345678000199"))
-            .body("data.companyName", equalTo("QA Factory"))
+            .body("data.companyName", equalTo("QA Factory Updated"))
             .body("data.addressZip", equalTo("01310-100"))
             .body("data.addressStreet", equalTo("Av Paulista"))
             .body("data.addressNumber", equalTo("1000"))
@@ -168,6 +194,6 @@ class UserRegistrationApiIntegrationTest : ApiIntegrationTestBase() {
             .body("data.addressNeighborhood", equalTo("Bela Vista"))
             .body("data.addressCity", equalTo("Sao Paulo"))
             .body("data.addressState", equalTo("SP"))
-            .body("data.residenceProofFilename", equalTo("residence-proof-pj.pdf"))
+            .body("data.residenceProofFilename", equalTo("residence-proof-pj-v2.pdf"))
     }
 }

@@ -128,6 +128,22 @@ Essa task executa automaticamente:
 - Relatório HTML Allure:
 	- `build/reports/allure-report/allureReport/index.html`
 
+### Publicação automática no GitHub Pages (CI)
+
+O workflow `.github/workflows/backend-kotlin-ci.yml` publica o relatório Allure no GitHub Pages quando há `push` na branch `main`.
+
+- Job de build/testes gera `apiAllureReport`
+- Artefato Allure também é salvo no workflow (`backend-kotlin-allure-report`)
+- Job de deploy publica para GitHub Pages via `actions/deploy-pages`
+- A página inicial publicada é um hub HTML com 2 opções:
+	- `API` → `./api/index.html` (Allure)
+	- `Unitários` → `./unit/index.html` (Gradle Test Report)
+
+Para funcionar na primeira vez:
+
+1. Vá em **Settings > Pages** do repositório
+2. Em **Build and deployment / Source**, selecione **GitHub Actions**
+
 ### Abrir relatório no navegador
 
 Após rodar `./gradlew.bat apiAllureReport`, abra:

@@ -96,6 +96,16 @@ tasks.register<Test>("apiTest") {
     systemProperty("allure.results.directory", layout.buildDirectory.dir("allure-results").get().asFile.absolutePath)
 }
 
+tasks.register<Test>("unitTest") {
+    description = "Runs non-API tests (excludes com.amazonqa.api.*)."
+    group = "verification"
+    useJUnitPlatform()
+    filter {
+        excludeTestsMatching("com.amazonqa.api.*")
+    }
+    systemProperty("allure.results.directory", layout.buildDirectory.dir("allure-results").get().asFile.absolutePath)
+}
+
 tasks.register<Delete>("cleanAllureResults") {
     description = "Cleans Allure results directory."
     group = "verification"

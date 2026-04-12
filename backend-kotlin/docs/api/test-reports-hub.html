@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amazon QA - Test Reports Hub</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --card: #131a2e;
+        --card-hover: #1a2440;
+        --text: #edf2ff;
+        --muted: #a8b3cf;
+        --primary: #4f8cff;
+        --success: #2dd4bf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(circle at 10% 0%, #121a31 0%, var(--bg) 55%);
+        color: var(--text);
+      }
+
+      .container {
+        width: min(980px, 92%);
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(26px, 4vw, 38px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .grid {
+        margin-top: 36px;
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 22px;
+        transition: transform 0.15s ease, background 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        background: var(--card-hover);
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        padding: 5px 10px;
+        color: #d9e4ff;
+      }
+
+      .card h2 {
+        margin: 14px 0 8px;
+        font-size: 22px;
+      }
+
+      .card p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .btn {
+        display: inline-block;
+        text-decoration: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .btn-api {
+        background: var(--primary);
+      }
+
+      .btn-unit {
+        background: var(--success);
+      }
+
+      .footer {
+        margin-top: 24px;
+        color: #93a0c3;
+        font-size: 13px;
+      }
+
+      .footer code {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Amazon QA - Relatórios de Testes</h1>
+      <p class="subtitle">
+        Selecione o tipo de relatório desejado para abrir os resultados publicados da esteira.
+      </p>
+
+      <section class="grid">
+        <article class="card">
+          <span class="badge">API</span>
+          <h2>Relatório de API</h2>
+          <p>
+            Relatório Allure dos testes de integração API executados pela pipeline.
+          </p>
+          <a class="btn btn-api" href="./api/index.html">Abrir relatório API</a>
+        </article>
+
+        <article class="card">
+          <span class="badge">Unitários</span>
+          <h2>Relatório Unitário</h2>
+          <p>
+            Relatório HTML dos testes unitários (Gradle Test Report) gerado na esteira.
+          </p>
+          <a class="btn btn-unit" href="./unit/index.html">Abrir relatório Unitário</a>
+        </article>
+      </section>
+
+      <p class="footer">
+        Dica: esta página é publicada como <code>index.html</code> no GitHub Pages pelo workflow
+        <code>backend-kotlin-ci.yml</code>.
+      </p>
+    </main>
+  </body>
+</html>
