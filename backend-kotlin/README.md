@@ -48,9 +48,27 @@ Runtime flags (`.env`):
 
 Notes:
 
-- SQL seeding targets tables from `V1__init.sql`: `users`, `projects`, `builds`, `test_plans`, `executions`, `audit_logs`.
+- SQL seeding targets migration tables (`V1` + `V2`): `users`, `projects`, `builds`, `test_plans`, `executions`, `audit_logs`, `test_cases`.
 - In-memory seeding also fills `StateStore` structures used by API modules (`requirements`, `suites`, `test cases`, `defects`, `report jobs`).
 - Validation runs after load for both SQL and in-memory datasets.
+
+## User Registration and Profile Endpoints
+
+Implemented endpoints for user onboarding and profile/address lifecycle:
+
+- `POST /api/v1/users/register` (public)
+- `POST /api/v1/admin/users/full` (admin)
+- `GET /api/v1/admin/users/{userId}/profile` (admin)
+- `PATCH /api/v1/admin/users/{userId}/profile` (admin)
+- `PATCH /api/v1/admin/users/{userId}/address` (admin)
+
+Payloads use `snake_case` JSON fields (for example: `first_name`, `address_city`, `residence_proof_filename`).
+
+Persistence model:
+
+- Base account data persisted in `users` table.
+- Extended profile data persisted in `user_profiles` table (`V3__create_user_profiles.sql`).
+- Password is persisted as BCrypt hash in `user_profiles.password_hash`.
 
 ## API Tests Implemented (Real HTTP, No Mocks)
 

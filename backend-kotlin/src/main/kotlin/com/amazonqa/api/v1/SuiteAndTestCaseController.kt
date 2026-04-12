@@ -2,6 +2,7 @@ package com.amazonqa.api.v1
 
 import com.amazonqa.common.api.ApiEnvelope
 import com.amazonqa.common.api.ResponseFactory
+import com.amazonqa.testcase.CreateTestCasePayload
 import com.amazonqa.testcase.TestCaseService
 import com.amazonqa.testsuite.SuiteService
 import jakarta.servlet.http.HttpServletRequest
@@ -73,7 +74,33 @@ class SuiteAndTestCaseController(
         @PathVariable projectId: UUID,
         @RequestBody request: CreateTestCaseRequest,
         servletRequest: HttpServletRequest,
-    ): ApiEnvelope<Any> = ResponseFactory.ok(testCaseService.createTestCase(projectId, request.title), servletRequest)
+    ): ApiEnvelope<Any> =
+        ResponseFactory.ok(
+            testCaseService.createTestCase(
+                projectId,
+                CreateTestCasePayload(
+                    title = request.title,
+                    testId = request.testId,
+                    priority = request.priority,
+                    bugSeverity = request.bugSeverity,
+                    tagsKeywords = request.tagsKeywords,
+                    requirementLink = request.requirementLink,
+                    executionType = request.executionType,
+                    testCaseStatus = request.testCaseStatus,
+                    platform = request.platform,
+                    testEnvironment = request.testEnvironment,
+                    preconditions = request.preconditions,
+                    actions = request.actions,
+                    expectedResult = request.expectedResult,
+                    actualResult = request.actualResult,
+                    executionStatus = request.executionStatus,
+                    notes = request.notes,
+                    customFields = request.customFields,
+                    attachments = request.attachments,
+                ),
+            ),
+            servletRequest,
+        )
 
     @GetMapping("/test-cases")
     @PreAuthorize("hasAnyRole('ADMIN','LEADER','TESTER','GUEST')")
@@ -140,7 +167,26 @@ data class CreateSuiteRequest(val name: String)
 
 data class UpdateSuiteRequest(val name: String? = null)
 
-data class CreateTestCaseRequest(val title: String)
+data class CreateTestCaseRequest(
+    val title: String,
+    val testId: String? = null,
+    val priority: String? = null,
+    val bugSeverity: String? = null,
+    val tagsKeywords: String? = null,
+    val requirementLink: String? = null,
+    val executionType: String? = null,
+    val testCaseStatus: String? = null,
+    val platform: String? = null,
+    val testEnvironment: String? = null,
+    val preconditions: String? = null,
+    val actions: String? = null,
+    val expectedResult: String? = null,
+    val actualResult: String? = null,
+    val executionStatus: String? = null,
+    val notes: String? = null,
+    val customFields: String? = null,
+    val attachments: String? = null,
+)
 
 data class UpdateTestCaseRequest(val title: String? = null)
 

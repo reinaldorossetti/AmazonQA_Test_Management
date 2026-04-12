@@ -2,6 +2,8 @@ package com.amazonqa.api
 
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasItem
+import org.hamcrest.Matchers.hasItems
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.Test
 
 class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
@@ -17,6 +19,7 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
                 .then()
                 .statusCode(200)
                 .body("data.name", equalTo(projectName))
+                .body("data.status", equalTo("ACTIVE"))
                 .extractId()
 
         givenGuest()
@@ -25,6 +28,8 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.id", equalTo(projectId))
+            .body("data.name", equalTo(projectName))
+            .body("data.status", equalTo("ACTIVE"))
 
         givenGuest()
             .`when`()
@@ -32,6 +37,7 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.id", hasItem(projectId))
+            .body("data.name", hasItem(projectName))
 
         val updatedName = "$projectName Updated"
         givenLeader()
@@ -42,6 +48,15 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .statusCode(200)
             .body("data.name", equalTo(updatedName))
 
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(projectId))
+            .body("data.name", equalTo(updatedName))
+            .body("data.status", equalTo("ACTIVE"))
+
         givenLeader()
             .`when`()
             .delete("/api/v1/projects/$projectId")
@@ -49,11 +64,29 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .statusCode(200)
             .body("data.status", equalTo("ARCHIVED"))
 
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(projectId))
+            .body("data.name", equalTo(updatedName))
+            .body("data.status", equalTo("ARCHIVED"))
+
         givenLeader()
             .`when`()
             .post("/api/v1/projects/$projectId/restore")
             .then()
             .statusCode(200)
+            .body("data.status", equalTo("ACTIVE"))
+
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(projectId))
+            .body("data.name", equalTo(updatedName))
             .body("data.status", equalTo("ACTIVE"))
     }
 
@@ -74,10 +107,20 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
 
         givenGuest()
             .`when`()
+            .get("/api/v1/projects/$projectId/requirements/$requirementId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(requirementId))
+            .body("data.title", equalTo(title))
+
+        givenGuest()
+            .`when`()
             .get("/api/v1/projects/$projectId/requirements")
             .then()
             .statusCode(200)
             .body("data.size()", equalTo(1))
+            .body("data.id", hasItem(requirementId))
+            .body("data.title", hasItem(title))
 
         val updatedTitle = "$title-updated"
         givenTester()
@@ -94,6 +137,7 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.id", equalTo(requirementId))
+            .body("data.title", equalTo(updatedTitle))
 
         givenGuest()
             .`when`()
@@ -112,16 +156,34 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
 
         givenGuest()
             .`when`()
+            .get("/api/v1/projects/$projectId/requirements")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(3))
+            .body("data.title", hasItems(updatedTitle, "REQ-A", "REQ-B"))
+
+        givenGuest()
+            .`when`()
             .get("/api/v1/projects/$projectId/traceability-matrix")
             .then()
             .statusCode(200)
             .body("data.projectId", equalTo(projectId))
+            .body("data.requirements", equalTo(3))
 
         givenLeader()
             .`when`()
             .delete("/api/v1/projects/$projectId/requirements/$requirementId")
             .then()
             .statusCode(200)
+            .body("data.id", equalTo(requirementId))
+
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId/requirements")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(2))
+            .body("data.id", not(hasItem(requirementId)))
 
         givenLeader()
             .`when`()
@@ -129,5 +191,21 @@ class ProjectRequirementApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.id", equalTo(requirementId))
+
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId/requirements/$requirementId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(requirementId))
+            .body("data.title", equalTo(updatedTitle))
+
+        givenGuest()
+            .`when`()
+            .get("/api/v1/projects/$projectId/requirements")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(3))
+            .body("data.id", hasItem(requirementId))
     }
 }

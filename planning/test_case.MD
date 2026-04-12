@@ -6,7 +6,7 @@ A tela de criação unifica dados técnicos com uma interface limpa e integraç�
 *   **Metadados do Teste:**
     *   **Title:** Campo obrigatório para definir o título claro do cenário.
     *   **Priority:** Menu suspenso definindo a importância do teste (`Critical`,`High`, `Medium`, `Low`).
-    *   **Test Case Status:** Menu suspenso para definir o ciclo de vida do caso de teste (`Draft`, `Active`, `Archived`).
+    *   **Test Case Status:** Menu suspenso para definir o ciclo de vida do caso de teste (`Draft`, `Ready for Review`, `Review in Progress`, `Rework`, `Final`, `Future`, `Obsolete`).
     *   **Execution Status:** Campo para registrar o resultado da execução (`Not Run`, `Passed`, `Failed`, `Blocked`).
     *   **Notes (Release/Execution):** Campo de observações por release e por execução para registrar contexto, riscos, evidências complementares e decisões do ciclo.
     *   **Bug Severity:** Menu suspenso definindo o impacto técnico do defeito (`Blocker`, `Critical`, `Major`, `Minor`, `Trivial`).
@@ -57,13 +57,13 @@ Obsolete: O teste não é mais válido porque a funcionalidade mudou ou deixou d
 | `tags_keywords` | VARCHAR(255) | NULL | Palavras-chave ou tags separadas por vírgula para execução direcionada (QA Sphere / TestLink). |
 | `requirement_link` | VARCHAR(255) | NULL | Identificador/URL vinculando o teste à especificação de requisitos (QA Sphere / TestLink). |
 | `execution_type` | ENUM | NOT NULL, DEFAULT 'Manual' | Define a natureza da execução: `Manual` ou `Automated` (TestLink). |
-| `test_case_status` | ENUM | NOT NULL, DEFAULT 'Draft' | Estado de ciclo de vida do caso de teste: `Draft`, `Active`, `Archived`. |
+| `test_case_status` | ENUM | NOT NULL, DEFAULT 'Draft' | Estado de ciclo de vida do caso de teste: `Draft`, `Ready for Review`, `Review in Progress`, `Rework`, `Final`, `Future`, `Obsolete`. |
 | `platform` | VARCHAR(100) | NULL | Plataforma associada, fundamental para matriz de compatibilidade (ex: Web, Mobile, Desktop) (TestLink). |
 | `test_environment` | VARCHAR(100) | NULL | Ambiente de execução, fundamental para matriz de compatibilidade (ex: Dev, QA, Staging, Production) (TestLink). |
 | `preconditions` | TEXT | NULL | Estado sistêmico ou dados prévios exigidos para o teste (QA Sphere / TestLink). |
 | `actions` | TEXT | NOT NULL | Instruções de execução passo a passo ou Gherkin/BDD (QA Sphere / TestLink). |
 | `expected_result` | TEXT | NOT NULL | Resultado e estado final exigidos para aprovação (QA Sphere / TestLink). |
-| `actual_result` | TEXT | NOT NULL | Resultado Atual (QA Sphere / TestLink). |
+| `actual_result` | TEXT | NULL | Resultado Atual (QA Sphere / TestLink), preenchido após execução. |
 | `execution_status` | ENUM | NOT NULL, DEFAULT 'Not Run' | Status da execução do teste: `Not Run`, `Passed`, `Failed`, `Blocked`. |
 | `notes` | TEXT | NULL | Observações por release/execução (ex: limitações conhecidas, dependências, links de evidência, decisões de triagem). |
 | `custom_fields` | JSON | NULL | Estrutura dinâmica e flexível para armazenar os campos personalizados configurados pelo Admin (TestLink). |
@@ -77,17 +77,18 @@ Obsolete: O teste não é mais válido porque a funcionalidade mudou ou deixou d
 CREATE TABLE test_cases (
     test_id VARCHAR(20) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    priority ENUM('High', 'Medium', 'Low') NOT NULL DEFAULT 'Medium',
+    priority ENUM('Critical', 'High', 'Medium', 'Low') NOT NULL DEFAULT 'Medium',
     bug_severity ENUM('Blocker', 'Critical', 'Major', 'Minor', 'Trivial') NOT NULL DEFAULT 'Major',
     tags_keywords VARCHAR(255) NULL COMMENT 'Armazena tags (QA Sphere) e keywords (TestLink) separadas por virgula ou em JSON array',
     requirement_link VARCHAR(255) NULL COMMENT 'Assegura a matriz de rastreabilidade (Requirements TestLink)',
     execution_type ENUM('Manual', 'Automated') NOT NULL DEFAULT 'Manual',
-    test_case_status ENUM('Draft', 'Active', 'Archived') NOT NULL DEFAULT 'Draft' COMMENT 'Estado de ciclo de vida do caso de teste',
+    test_case_status ENUM('Draft', 'Ready for Review', 'Review in Progress', 'Rework', 'Final', 'Future', 'Obsolete') NOT NULL DEFAULT 'Draft' COMMENT 'Estado de ciclo de vida do caso de teste',
     platform VARCHAR(100) NULL COMMENT 'Mapeamento de plataformas de software ou hardware alvo',
+    test_environment VARCHAR(100) NULL COMMENT 'Ambiente de execução para matriz de compatibilidade (Dev, QA, Staging, Production)',
     preconditions TEXT NULL COMMENT 'Precondições para a suite de testes iniciar',
     actions TEXT NOT NULL COMMENT 'Escopo do teste com suporte as marcações ricas (Gherkin/Listas/Código)',
     expected_result TEXT NOT NULL COMMENT 'Resultado final e esperado apos as ações',
-    actual_result TEXT NOT NULL COMMENT 'Resultado atual do teste',
+    actual_result TEXT NULL COMMENT 'Resultado atual do teste (preenchido apos execução)',
     execution_status ENUM('Not Run', 'Passed', 'Failed', 'Blocked') NOT NULL DEFAULT 'Not Run' COMMENT 'Status da execução do teste',
     notes TEXT NULL COMMENT 'Observações por release/execução',
     custom_fields JSON NULL COMMENT 'Campo flexivel no padrao de dados moderno para substituir os Custom Fields relacionais do TestLink',

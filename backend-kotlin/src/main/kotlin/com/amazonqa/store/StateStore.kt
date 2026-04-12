@@ -38,6 +38,28 @@ data class UserRecord(
     val preferences: MutableMap<String, String> = mutableMapOf(),
 )
 
+data class UserProfileRecord(
+    val userId: UUID,
+    var personType: String = "PF",
+    var firstName: String? = null,
+    var lastName: String? = null,
+    var phone: String? = null,
+    var cpf: String? = null,
+    var cnpj: String? = null,
+    var companyName: String? = null,
+    var addressZip: String? = null,
+    var addressStreet: String? = null,
+    var addressNumber: String? = null,
+    var addressComplement: String? = null,
+    var addressNeighborhood: String? = null,
+    var addressCity: String? = null,
+    var addressState: String? = null,
+    var residenceProofFilename: String? = null,
+    var passwordHash: String? = null,
+    val createdAt: Instant = Instant.now(),
+    var updatedAt: Instant = Instant.now(),
+)
+
 data class ProjectRecord(
     val id: UUID,
     var name: String,
@@ -66,6 +88,23 @@ data class TestCaseRecord(
     val id: UUID,
     val projectId: UUID,
     var title: String,
+    var testId: String? = null,
+    var priority: String = "Medium",
+    var bugSeverity: String = "Major",
+    var tagsKeywords: String? = null,
+    var requirementLink: String? = null,
+    var executionType: String = "Manual",
+    var testCaseStatus: String = "Draft",
+    var platform: String? = null,
+    var testEnvironment: String? = null,
+    var preconditions: String? = null,
+    var actions: String? = null,
+    var expectedResult: String? = null,
+    var actualResult: String? = null,
+    var executionStatus: String = "Not Run",
+    var notes: String? = null,
+    var customFields: String? = null,
+    var attachments: String? = null,
     var version: Int,
     var deletedAt: Instant? = null,
     var executedBefore: Boolean = false,
@@ -129,6 +168,7 @@ data class AuditRecord(
 @Component
 class StateStore {
     val users: MutableMap<UUID, UserRecord> = ConcurrentHashMap()
+    val userProfiles: MutableMap<UUID, UserProfileRecord> = ConcurrentHashMap()
     val projects: MutableMap<UUID, ProjectRecord> = ConcurrentHashMap()
     val requirements: MutableMap<UUID, RequirementRecord> = ConcurrentHashMap()
     val suites: MutableMap<UUID, SuiteRecord> = ConcurrentHashMap()

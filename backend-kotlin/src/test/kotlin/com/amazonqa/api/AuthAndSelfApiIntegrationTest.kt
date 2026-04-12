@@ -1,6 +1,7 @@
 package com.amazonqa.api
 
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasItem
 import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.Test
 
@@ -46,13 +47,30 @@ class AuthAndSelfApiIntegrationTest : ApiIntegrationTestBase() {
             .statusCode(200)
             .body("data.username", equalTo("tester@amazonqa.local"))
 
+        val theme = "dark"
+        val locale = "pt-BR"
+
         givenAdmin()
-            .body(mapOf("preferences" to mapOf("theme" to "dark", "locale" to "pt-BR")))
+            .body(mapOf("preferences" to mapOf("theme" to theme, "locale" to locale)))
             .`when`()
             .patch("/api/v1/users/me/preferences")
             .then()
             .statusCode(200)
-            .body("data.theme", equalTo("dark"))
-            .body("data.locale", equalTo("pt-BR"))
+            .body("data.theme", equalTo(theme))
+            .body("data.locale", equalTo(locale))
+
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/users/me")
+            .then()
+            .statusCode(200)
+            .body("data.username", equalTo("admin@amazonqa.local"))
+
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/audit-logs")
+            .then()
+            .statusCode(200)
+            .body("data.metadata", hasItem("USER_PREFERENCES_UPDATED"))
     }
 }

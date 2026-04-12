@@ -12,6 +12,8 @@ paths:
     post: {summary: Refresh token, responses: {'200': {description: OK}}}
   /auth/logout:
     post: {summary: Logout, responses: {'200': {description: OK}}}
+  /users/register:
+    post: {summary: Public user registration with profile data, responses: {'200': {description: OK}}}
   /users/me:
     get: {summary: Get current user, responses: {'200': {description: OK}}}
   /users/me/preferences:
@@ -19,10 +21,17 @@ paths:
   /admin/users:
     post: {summary: Create user, responses: {'200': {description: OK}}}
     get: {summary: List users, responses: {'200': {description: OK}}}
+  /admin/users/full:
+    post: {summary: Admin full user registration with profile and role, responses: {'200': {description: OK}}}
   /admin/users/{userId}:
     get: {summary: Get user by id, responses: {'200': {description: OK}}}
     patch: {summary: Update user by id, responses: {'200': {description: OK}}}
     delete: {summary: Soft delete user by id, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/profile:
+    get: {summary: Get user profile details, responses: {'200': {description: OK}}}
+    patch: {summary: Update user profile details, responses: {'200': {description: OK}}}
+  /admin/users/{userId}/address:
+    patch: {summary: Update user address fields, responses: {'200': {description: OK}}}
   /admin/users/{userId}/status:
     patch: {summary: Change user status, responses: {'200': {description: OK}}}
   /admin/roles:

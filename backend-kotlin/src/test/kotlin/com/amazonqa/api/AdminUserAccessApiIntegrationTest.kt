@@ -1,22 +1,27 @@
 package com.amazonqa.api
 
 import org.hamcrest.Matchers.equalTo
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.hamcrest.Matchers.hasItem
+import org.hamcrest.Matchers.hasItems
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.Test
 
 class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
     @Test
     fun `admin can manage user lifecycle`() {
+        val fullName = faker.name().fullName()
         val email = "${faker.internet().username()}-${System.nanoTime()}@example.com"
 
         val userId =
             givenAdmin()
-                .body(mapOf("fullName" to faker.name().fullName(), "email" to email))
+                .body(mapOf("fullName" to fullName, "email" to email))
                 .`when`()
                 .post("/api/v1/admin/users")
                 .then()
                 .statusCode(200)
+                .body("data.fullName", equalTo(fullName))
                 .body("data.email", equalTo(email))
+                .body("data.status", equalTo("ACTIVE"))
                 .extractId()
 
         givenAdmin()
@@ -25,6 +30,9 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.id", equalTo(userId))
+            .body("data.fullName", equalTo(fullName))
+            .body("data.email", equalTo(email))
+            .body("data.status", equalTo("ACTIVE"))
 
         val updatedName = "${faker.name().firstName()} QA"
         givenAdmin()
@@ -36,6 +44,15 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
             .body("data.fullName", equalTo(updatedName))
 
         givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(userId))
+            .body("data.fullName", equalTo(updatedName))
+            .body("data.email", equalTo(email))
+
+        givenAdmin()
             .body(mapOf("status" to "INACTIVE"))
             .`when`()
             .patch("/api/v1/admin/users/$userId/status")
@@ -45,12 +62,21 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
 
         givenAdmin()
             .`when`()
+            .get("/api/v1/admin/users/$userId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(userId))
+            .body("data.status", equalTo("INACTIVE"))
+
+        givenAdmin()
+            .`when`()
             .get("/api/v1/admin/users")
             .then()
             .statusCode(200)
-            .extract()
-            .asString()
-            .also { payload -> assertTrue(payload.contains(email)) }
+            .body("data.id", hasItem(userId))
+            .body("data.email", hasItem(email))
+            .body("data.fullName", hasItem(updatedName))
+            .body("data.status", hasItem("INACTIVE"))
 
         givenAdmin()
             .`when`()
@@ -58,29 +84,34 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
             .then()
             .statusCode(200)
             .body("data.status", equalTo("DELETED"))
+
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId")
+            .then()
+            .statusCode(200)
+            .body("data.id", equalTo(userId))
+            .body("data.fullName", equalTo(updatedName))
+            .body("data.email", equalTo(email))
+            .body("data.status", equalTo("DELETED"))
     }
 
     @Test
     fun `admin can list roles and permissions`() {
-        val rolesPayload =
-            givenAdmin()
-                .`when`()
-                .get("/api/v1/admin/roles")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(rolesPayload.contains("ADMIN"))
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/roles")
+            .then()
+            .statusCode(200)
+            .body("data", hasItems("ADMIN", "LEADER", "TESTER", "GUEST"))
 
-        val permissionsPayload =
-            givenAdmin()
-                .`when`()
-                .get("/api/v1/admin/permissions")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(permissionsPayload.contains("PROJECT_READ"))
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/permissions")
+            .then()
+            .statusCode(200)
+            .body("data", hasItem("PROJECT_READ"))
+            .body("data", hasItem("*"))
     }
 
     @Test
@@ -88,47 +119,37 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
         val userId = createUser()
         val projectId = createProject()
 
-        val initialRoles =
-            givenAdmin()
-                .`when`()
-                .get("/api/v1/admin/users/$userId/roles")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(initialRoles.contains("GUEST"))
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId/roles")
+            .then()
+            .statusCode(200)
+            .body("data.role", hasItem("GUEST"))
+            .body("data.scopeType", hasItem("GLOBAL"))
 
-        val globalRolesAfterAssign =
-            givenAdmin()
-                .body(mapOf("role" to "LEADER"))
-                .`when`()
-                .post("/api/v1/admin/users/$userId/roles")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(globalRolesAfterAssign.contains("LEADER"))
+        givenAdmin()
+            .body(mapOf("role" to "LEADER"))
+            .`when`()
+            .post("/api/v1/admin/users/$userId/roles")
+            .then()
+            .statusCode(200)
+            .body("data.role", hasItems("GUEST", "LEADER"))
 
-        val scopedRolesAfterAssign =
-            givenAdmin()
-                .body(mapOf("role" to "TESTER", "scopeId" to projectId))
-                .`when`()
-                .post("/api/v1/admin/users/$userId/scoped-roles")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(scopedRolesAfterAssign.contains(projectId))
+        givenAdmin()
+            .body(mapOf("role" to "TESTER", "scopeId" to projectId))
+            .`when`()
+            .post("/api/v1/admin/users/$userId/scoped-roles")
+            .then()
+            .statusCode(200)
+            .body("data.role", hasItems("GUEST", "LEADER", "TESTER"))
+            .body("data.scopeId", hasItem(projectId))
 
-        val effectivePermissions =
-            givenAdmin()
-                .`when`()
-                .get("/api/v1/admin/users/$userId/effective-permissions")
-                .then()
-                .statusCode(200)
-                .extract()
-                .asString()
-        assertTrue(effectivePermissions.contains("PROJECT_WRITE"))
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId/effective-permissions")
+            .then()
+            .statusCode(200)
+            .body("data", hasItems("PROJECT_WRITE", "EXECUTION_WRITE", "PROJECT_READ"))
 
         givenAdmin()
             .`when`()
@@ -137,11 +158,26 @@ class AdminUserAccessApiIntegrationTest : ApiIntegrationTestBase() {
             .statusCode(200)
 
         givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId/roles")
+            .then()
+            .statusCode(200)
+            .body("data.role", not(hasItem("LEADER")))
+
+        givenAdmin()
             .body(mapOf("scopeId" to projectId))
             .`when`()
             .delete("/api/v1/admin/users/$userId/scoped-roles/TESTER")
             .then()
             .statusCode(200)
+
+        givenAdmin()
+            .`when`()
+            .get("/api/v1/admin/users/$userId/roles")
+            .then()
+            .statusCode(200)
+            .body("data.scopeId", not(hasItem(projectId)))
+            .body("data.role", hasItem("GUEST"))
     }
 
     @Test

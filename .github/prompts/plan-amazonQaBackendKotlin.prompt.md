@@ -19,6 +19,7 @@ The backend must prioritize:
 - End-to-end traceability (Requirement → Test Case → Execution → Defect → Metrics)
 - Security and RBAC
 - Immutable versioning for test cases
+- Status-driven lifecycle for test design and execution (`test_case_status`, `execution_status`) with release/execution notes
 - Auditability and compliance
 - Maintainability with SOLID and clean architecture patterns
 
@@ -104,9 +105,11 @@ Design principles:
 Classes:
 - `AuthController`
 - `AuthService`
+- `UserRegistrationController`
 - `JwtService`
 - `RbacService`
 - `UserService`
+- `UserRegistrationService`
 - `UserManagementController`
 - `RoleManagementController`
 - `AccessPolicyService`
@@ -116,12 +119,17 @@ Main functions:
 - `login()`
 - `refreshToken()`
 - `logout()`
+- `registerUser()`
+- `adminCreateUserWithProfile()`
 - `getCurrentUser()`
 - `authorize(user, action, resource)`
 - `createUser()`
 - `listUsers()`
 - `getUserById()`
 - `updateUser()`
+- `getUserProfileById()`
+- `updateUserProfile()`
+- `updateUserAddress()`
 - `deactivateUser()`
 - `assignRoleToUser()`
 - `removeRoleFromUser()`
@@ -205,6 +213,7 @@ Classes:
 - `TestCaseController`
 - `TestCaseService`
 - `TestCaseVersioningService`
+- `TestCaseWorkflowService`
 
 Main functions:
 - `createSuite()`
@@ -219,8 +228,31 @@ Main functions:
 - `archiveTestCase()`
 - `deleteTestCase()`
 - `restoreTestCase()`
+- `updateTestCaseStatus()`
+- `updateExecutionStatus()`
+- `updateBugSeverity()`
+- `updateReleaseExecutionNotes()`
 - `bulkEditTestCases()`
 - `searchTestCases()`
+
+### 6.4.1 Test Case Management Data Model (Design + Execution)
+
+Core fields for `TestCase`:
+- `testId`, `title`
+- `priority` (`Critical`, `High`, `Medium`, `Low`)
+- `bugSeverity` (`Blocker`, `Critical`, `Major`, `Minor`, `Trivial`)
+- `testCaseStatus` (`Draft`, `Ready for Review`, `Review in Progress`, `Rework`, `Final`, `Future`, `Obsolete`)
+- `executionStatus` (`Not Run`, `Passed`, `Failed`, `Blocked`)
+- `executionType` (`Manual`, `Automated`)
+- `platform`, `testEnvironment`
+- `preconditions`, `actions`, `expectedResult`, `actualResult`
+- `notes` (release/execution context)
+- `tagsKeywords`, `requirementLink`, `customFields`, `attachments`
+
+Status model:
+- **Design workflow status** controls authoring/governance lifecycle before execution.
+- **Execution status** controls run outcome and reporting lifecycle.
+- `actualResult` and `notes` must be auditable when execution transitions to `Passed`, `Failed`, or `Blocked`.
 
 ---
 
@@ -310,16 +342,21 @@ Authentication:
 - `POST /api/v1/auth/logout`
 
 Users:
+- `POST /api/v1/users/register`
 - `GET /api/v1/users/me`
 - `PATCH /api/v1/users/me/preferences`
 
 User CRUD:
 - `POST /api/v1/admin/users`
+- `POST /api/v1/admin/users/full`
 - `GET /api/v1/admin/users`
 - `GET /api/v1/admin/users/{userId}`
 - `PATCH /api/v1/admin/users/{userId}`
 - `PATCH /api/v1/admin/users/{userId}/status`
 - `DELETE /api/v1/admin/users/{userId}` (soft delete)
+- `GET /api/v1/admin/users/{userId}/profile`
+- `PATCH /api/v1/admin/users/{userId}/profile`
+- `PATCH /api/v1/admin/users/{userId}/address`
 
 Access Management:
 - `GET /api/v1/admin/roles`
@@ -364,6 +401,12 @@ Suites/Test Cases:
 - `DELETE /api/v1/projects/{projectId}/test-cases/{testCaseId}` (soft delete)
 - `POST /api/v1/projects/{projectId}/test-cases/{testCaseId}/restore`
 - `POST /api/v1/projects/{projectId}/test-cases/{testCaseId}/versions`
+- `GET /api/v1/projects/{projectId}/test-cases/{testCaseId}/history`
+- `GET /api/v1/projects/{projectId}/test-cases/{testCaseId}/transitions`
+- `PATCH /api/v1/projects/{projectId}/test-cases/{testCaseId}/workflow-status`
+- `PATCH /api/v1/projects/{projectId}/test-cases/{testCaseId}/execution-status`
+- `PATCH /api/v1/projects/{projectId}/test-cases/{testCaseId}/severity`
+- `PATCH /api/v1/projects/{projectId}/test-cases/{testCaseId}/notes`
 - `PATCH /api/v1/projects/{projectId}/test-cases/bulk`
 
 Planning/Execution:
@@ -408,7 +451,7 @@ Audit:
 2. Failed execution requires `actualResult` + evidence.
 3. Guest cannot mutate test plans/builds/test cases (`403 Forbidden`).
 4. Editing a test case used in executions must create a new version.
-5. Coverage calculation includes only active test cases.
+5. Coverage calculation includes only `Final` test cases.
 6. External issue creation must be idempotent and retryable.
 7. A user may hold multiple roles; effective access equals the union of active grants.
 8. Access checks are deny-by-default and scope-aware (`global` or `project`).
@@ -418,6 +461,14 @@ Audit:
 12. Hard delete is restricted to admin purge workflow and preserves legal/audit retention.
 13. Requirement, suite, test case and defect deletions must preserve historical references.
 14. Draft-only deletion applies to build/test plan; closed artifacts are immutable.
+15. `testCaseStatus` and `executionStatus` are independent and must follow allowed transitions.
+16. Allowed `testCaseStatus` transitions: `Draft -> Ready for Review/Future/Obsolete`; `Ready for Review -> Review in Progress/Rework/Final`; `Review in Progress -> Rework/Final`; `Rework -> Ready for Review/Obsolete`; `Final -> Obsolete`; `Future -> Draft/Ready for Review/Obsolete`.
+17. `executionStatus` can move from `Not Run` to `Passed`/`Failed`/`Blocked`; re-execution from `Failed`/`Blocked` to `Passed` is allowed with audit trail.
+18. Any transition to `Failed` or `Blocked` must persist `actualResult` and execution `notes`.
+19. `bugSeverity` changes must be tracked in audit log with before/after values.
+20. Release/execution `notes` updates must preserve history and actor traceability.
+21. User self-registration requires non-blank `email` and `password`, with password stored as hash.
+22. `personType` must follow business domain (`PF` or `PJ`) for user profile records.
 
 ---
 
@@ -450,13 +501,15 @@ Audit:
 11. Last-admin protection and audit log validation covered by automated tests
 12. CRUD validation for Projects, Requirements, Suites, Test Cases, Builds, Plans and Defects
 13. Delete/restore workflows validated with authorization + retention constraints
+14. Test case design/execution status matrix, bug severity, release/execution notes and `Final`-only coverage behavior validated end-to-end
+15. Workflow transitions endpoint and test case history endpoint validated by contract + integration tests
 
-## 11)  Tests - Definition of Done (DoD)
- 1. Detekt e Ktlint (com zero code smells tolerados), tipagem forte do Kotlin, uso de MockK + Testcontainers para testes de integração, e documentação via KDoc ou OpenAPI/Swagger nativo (ex: Springdoc OpenAPI).
- 3. Unit Tests: 100% coverage for critical paths, including RBAC rules and edge cases.
- 4. End to End: e2e tests if applicable (web or mobile applications in TypeScript), E2E tests should not contain simulated data.
- 5. Language: 100% English codebase.
- 6. Documentation: Updated README or inline JSDoc where applicable.
+## 10.1 Tests - Definition of Done (DoD)
+ 1. Detekt e Ktlint com zero code smells bloqueantes, tipagem forte em Kotlin, uso de MockK + Testcontainers para integração e documentação via KDoc ou OpenAPI/Swagger (Springdoc).
+ 2. Unit tests com cobertura total dos caminhos críticos (RBAC, versionamento e transições de status).
+ 3. Integration/API tests para workflows de status (`workflow-status`, `execution-status`), severidade, notas e histórico.
+ 4. End-to-end tests quando aplicável, sem uso de dados simulados irreais para cenários críticos.
+ 5. Documentação técnica atualizada (`README`, contrato OpenAPI e decisões arquiteturais relevantes).
 ---
 
 ## 11. Recommended Improvements
@@ -541,6 +594,18 @@ Audit:
 - **Then** operation is allowed
 - **And** deletion requires `LEADER` or `ADMIN`
 
+### 12.12 Test case workflow and execution status governance
+- **Given** a test case in `Draft`
+- **When** a reviewer moves it to `Ready for Review` and later `Final`
+- **Then** workflow transitions are validated according to allowed status graph
+- **And** audit entries capture actor and before/after status
+
+### 12.13 Execution status with notes by release/execution
+- **Given** a finalized test case associated with a release run
+- **When** execution status is updated to `Failed` with `actualResult` and `notes`
+- **Then** the API persists both fields with execution context
+- **And** metrics and traceability queries reflect the latest execution outcome
+
 ---
 
 ## 13. Delivery Roadmap (30/60/90 days)
@@ -559,10 +624,10 @@ Audit:
 
 | Module | Status | What is implemented | What is still pending / partial |
 |---|---|---|---|
-| Identity & RBAC | **Partially done** | Auth endpoints, user self endpoint, admin user CRUD, role assignment/removal, effective permissions, last-admin protection, method-level role guards with `@PreAuthorize`. | Auth is MVP (fixed bearer tokens), no real JWT signing/expiration/rotation pipeline, scoped role assignment exists but authorization is still mainly role-based by token principal. |
+| Identity & RBAC | **Partially done** | Auth endpoints, public user registration (`/users/register`), admin full user/profile onboarding (`/admin/users/full`), admin user CRUD, profile/address endpoints, role assignment/removal, effective permissions, last-admin protection, method-level role guards with `@PreAuthorize`, PostgreSQL persistence for `users` and `user_profiles`. | Auth is MVP (fixed bearer tokens), no real JWT signing/expiration/rotation pipeline, scoped role assignment exists but authorization is still mainly role-based by token principal. |
 | Projects | **Partially done** | Create/list/get/update, soft delete (`ARCHIVED` + `deletedAt/deletedBy`), restore, deletion blocked by active builds/runs. | Hard delete purge workflow not implemented; member management exists at service level but is not exposed in v1 endpoints. |
 | Requirements & Traceability | **Partially done** | CRUD + restore, import endpoint, coverage endpoint, traceability matrix endpoint. | Import currently returns simplified result (`errors=0`), no row-level error model; no explicit test-case link entity/rules yet. |
-| Suites & Test Cases | **Mostly done (MVP)** | Suite CRUD + restore + tree; test case CRUD + restore + bulk edit + search + version creation. | Versioning rule depends on `executedBefore` flag in memory model; no persistent relational version chain yet. |
+| Suites & Test Cases | **Mostly done (MVP)** | Suite CRUD + restore + tree; test case CRUD + restore + bulk edit + search + version creation. | Versioning rule depends on `executedBefore` flag in memory model; no persistent relational version chain yet. Workflow/Execution status model, bug severity and release/execution notes from `test_case` plan still need full domain + persistence implementation. |
 | Planning, Builds & Execution | **Mostly done (MVP)** | Build/plan CRUD (with draft-only deletion), run creation, execution status/evidence endpoints, close build, immutable closed build for updates, FAILED requires `actualResult` + evidence. | No explicit state machine abstraction yet (states are enum + guards in services). |
 | Defects & Jira integration | **Partially done** | Defect CRUD flows, create defect from execution, Jira config + verify endpoints present. | Jira integration is still stubbed/simplified (no real API calls, idempotency keys, or resilient retry orchestration). |
 | Reports & Metrics | **Partially done** | Operational metrics endpoint, coverage/execution report endpoints, report job lifecycle endpoints. | CSV/PDF export content is placeholder; report jobs are in-memory and not asynchronous with durable queue. |

@@ -7,8 +7,11 @@ import com.amazonqa.store.RoleAssignment
 import com.amazonqa.store.StateStore
 import com.amazonqa.store.UserRecord
 import com.amazonqa.store.UserStatus
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.http.HttpStatus
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
@@ -16,10 +19,12 @@ import java.util.UUID
 class UserService(
     private val stateStore: StateStore,
     private val auditService: AuditService,
+    private val jdbcTemplateProvider: ObjectProvider<JdbcTemplate>,
 ) {
     fun createUser(
         fullName: String,
         email: String,
+        role: Role = Role.GUEST,
     ): UserRecord {
         if (stateStore.users.values.any { it.email.equals(email, ignoreCase = true) }) {
             throw DomainException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS", "Email is already registered", "email")
@@ -35,10 +40,11 @@ class UserService(
                 updatedAt = now,
                 roleAssignments =
                     mutableSetOf(
-                        RoleAssignment(role = Role.GUEST, scopeType = com.amazonqa.security.ScopeType.GLOBAL),
+                        RoleAssignment(role = role, scopeType = com.amazonqa.security.ScopeType.GLOBAL),
                     ),
             )
         stateStore.users[user.id] = user
+        upsertUserInPostgres(user)
         auditService.logCreate("USER", user.id.toString(), "USER_CREATED")
         return user
     }
@@ -55,9 +61,19 @@ class UserService(
         email: String?,
     ): UserRecord {
         val user = getUser(userId)
+        email?.let { newEmail ->
+            val duplicate =
+                stateStore.users.values.any {
+                    it.id != userId && it.email.equals(newEmail, ignoreCase = true)
+                }
+            if (duplicate) {
+                throw DomainException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS", "Email is already registered", "email")
+            }
+        }
         fullName?.let { user.fullName = it }
         email?.let { user.email = it }
         user.updatedAt = Instant.now()
+        upsertUserInPostgres(user)
         auditService.logUpdate("USER", user.id.toString(), "USER_UPDATED")
         return user
     }
@@ -72,6 +88,7 @@ class UserService(
         }
         user.status = status
         user.updatedAt = Instant.now()
+        upsertUserInPostgres(user)
         auditService.logUpdate("USER", user.id.toString(), "USER_STATUS_UPDATED")
         return user
     }
@@ -83,6 +100,7 @@ class UserService(
         }
         user.status = UserStatus.DELETED
         user.updatedAt = Instant.now()
+        upsertUserInPostgres(user)
         auditService.logDelete("USER", user.id.toString(), "USER_SOFT_DELETED")
         return user
     }
@@ -102,4 +120,25 @@ class UserService(
 
     private fun UserRecord.isGlobalAdmin(): Boolean =
         roleAssignments.any { it.role == Role.ADMIN && it.scopeType == com.amazonqa.security.ScopeType.GLOBAL }
+
+    private fun upsertUserInPostgres(user: UserRecord) {
+        val jdbcTemplate = jdbcTemplateProvider.ifAvailable ?: return
+        jdbcTemplate.update(
+            """
+            INSERT INTO users (id, full_name, email, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                full_name = EXCLUDED.full_name,
+                email = EXCLUDED.email,
+                status = EXCLUDED.status,
+                updated_at = EXCLUDED.updated_at
+            """.trimIndent(),
+            user.id,
+            user.fullName,
+            user.email,
+            user.status.name,
+            Timestamp.from(user.createdAt),
+            Timestamp.from(user.updatedAt),
+        )
+    }
 }

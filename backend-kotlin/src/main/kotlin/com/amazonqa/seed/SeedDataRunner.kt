@@ -138,7 +138,7 @@ class SeedDataRunner(
     }
 
     private fun resetPostgres(jdbcTemplate: JdbcTemplate) {
-        jdbcTemplate.execute("TRUNCATE TABLE executions, builds, test_plans, audit_logs, projects, users CASCADE")
+        jdbcTemplate.execute("TRUNCATE TABLE test_cases, executions, builds, test_plans, audit_logs, projects, users CASCADE")
         logger.info("PostgreSQL reset completed (TRUNCATE CASCADE).")
     }
 
@@ -202,6 +202,23 @@ class SeedDataRunner(
                     id = id,
                     projectId = row.projectId.toUuid(),
                     title = row.title,
+                    testId = row.testId,
+                    priority = row.priority,
+                    bugSeverity = row.bugSeverity,
+                    tagsKeywords = row.tagsKeywords,
+                    requirementLink = row.requirementLink,
+                    executionType = row.executionType,
+                    testCaseStatus = row.testCaseStatus,
+                    platform = row.platform,
+                    testEnvironment = row.testEnvironment,
+                    preconditions = row.preconditions,
+                    actions = row.actions,
+                    expectedResult = row.expectedResult,
+                    actualResult = row.actualResult,
+                    executionStatus = row.executionStatus,
+                    notes = row.notes,
+                    customFields = row.customFields?.let { objectMapper.writeValueAsString(it) },
+                    attachments = row.attachments,
                     version = row.version,
                     deletedAt = row.deletedAt?.toInstant(),
                     executedBefore = row.executedBefore,
@@ -359,6 +376,87 @@ class SeedDataRunner(
             )
         }
 
+        seedData.testCases.forEach { row ->
+            val customFieldsJson = row.customFields?.let { objectMapper.writeValueAsString(it) }
+            jdbcTemplate.update(
+                """
+                INSERT INTO test_cases (
+                    id,
+                    project_id,
+                    test_id,
+                    title,
+                    priority,
+                    bug_severity,
+                    tags_keywords,
+                    requirement_link,
+                    execution_type,
+                    test_case_status,
+                    platform,
+                    test_environment,
+                    preconditions,
+                    actions,
+                    expected_result,
+                    actual_result,
+                    execution_status,
+                    notes,
+                    custom_fields,
+                    attachments,
+                    version,
+                    deleted_at,
+                    executed_before,
+                    updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?, ?, ?, ?, NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                    project_id = EXCLUDED.project_id,
+                    test_id = EXCLUDED.test_id,
+                    title = EXCLUDED.title,
+                    priority = EXCLUDED.priority,
+                    bug_severity = EXCLUDED.bug_severity,
+                    tags_keywords = EXCLUDED.tags_keywords,
+                    requirement_link = EXCLUDED.requirement_link,
+                    execution_type = EXCLUDED.execution_type,
+                    test_case_status = EXCLUDED.test_case_status,
+                    platform = EXCLUDED.platform,
+                    test_environment = EXCLUDED.test_environment,
+                    preconditions = EXCLUDED.preconditions,
+                    actions = EXCLUDED.actions,
+                    expected_result = EXCLUDED.expected_result,
+                    actual_result = EXCLUDED.actual_result,
+                    execution_status = EXCLUDED.execution_status,
+                    notes = EXCLUDED.notes,
+                    custom_fields = EXCLUDED.custom_fields,
+                    attachments = EXCLUDED.attachments,
+                    version = EXCLUDED.version,
+                    deleted_at = EXCLUDED.deleted_at,
+                    executed_before = EXCLUDED.executed_before,
+                    updated_at = NOW()
+                """.trimIndent(),
+                row.id.toUuid(),
+                row.projectId.toUuid(),
+                row.testId,
+                row.title,
+                row.priority,
+                row.bugSeverity,
+                row.tagsKeywords,
+                row.requirementLink,
+                row.executionType,
+                row.testCaseStatus,
+                row.platform,
+                row.testEnvironment,
+                row.preconditions,
+                row.actions,
+                row.expectedResult,
+                row.actualResult,
+                row.executionStatus,
+                row.notes,
+                customFieldsJson,
+                row.attachments,
+                row.version,
+                row.deletedAt?.toTimestamp(),
+                row.executedBefore,
+            )
+        }
+
         seedData.testPlans.forEach { row ->
             jdbcTemplate.update(
                 """
@@ -454,6 +552,7 @@ class SeedDataRunner(
 
         validateTableCount(jdbcTemplate, "users", seedData.users.size, failures)
         validateTableCount(jdbcTemplate, "projects", seedData.projects.size, failures)
+        validateTableCount(jdbcTemplate, "test_cases", seedData.testCases.size, failures)
         validateTableCount(jdbcTemplate, "builds", seedData.builds.size, failures)
         validateTableCount(jdbcTemplate, "test_plans", seedData.testPlans.size, failures)
         validateTableCount(jdbcTemplate, "executions", seedData.executions.size, failures)
@@ -461,6 +560,7 @@ class SeedDataRunner(
 
         seedData.users.forEach { if (!existsById(jdbcTemplate, "users", it.id.toUuid())) failures.add("PostgreSQL missing user ${it.id}") }
         seedData.projects.forEach { if (!existsById(jdbcTemplate, "projects", it.id.toUuid())) failures.add("PostgreSQL missing project ${it.id}") }
+        seedData.testCases.forEach { if (!existsById(jdbcTemplate, "test_cases", it.id.toUuid())) failures.add("PostgreSQL missing test case ${it.id}") }
         seedData.builds.forEach { if (!existsById(jdbcTemplate, "builds", it.id.toUuid())) failures.add("PostgreSQL missing build ${it.id}") }
         seedData.testPlans.forEach { if (!existsById(jdbcTemplate, "test_plans", it.id.toUuid())) failures.add("PostgreSQL missing test plan ${it.id}") }
         seedData.executions.forEach { if (!existsById(jdbcTemplate, "executions", it.id.toUuid())) failures.add("PostgreSQL missing execution ${it.id}") }
@@ -580,7 +680,24 @@ data class SuiteSeed(
 data class TestCaseSeed(
     val id: String,
     val projectId: String,
+    val testId: String,
     val title: String,
+    val priority: String = "Medium",
+    val bugSeverity: String = "Major",
+    val tagsKeywords: String? = null,
+    val requirementLink: String? = null,
+    val executionType: String = "Manual",
+    val testCaseStatus: String = "Draft",
+    val platform: String? = null,
+    val testEnvironment: String? = null,
+    val preconditions: String? = null,
+    val actions: String? = null,
+    val expectedResult: String? = null,
+    val actualResult: String? = null,
+    val executionStatus: String = "Not Run",
+    val notes: String? = null,
+    val customFields: Map<String, Any>? = null,
+    val attachments: String? = null,
     val version: Int,
     val deletedAt: String? = null,
     val executedBefore: Boolean = false,
