@@ -22,6 +22,36 @@ Backend service for **Amazon QA Test Case Management** using **Kotlin + Spring B
 4. Run app:
    - `./gradlew.bat bootRun`
 
+## Seed Data (JSON + Startup Runner)
+
+The backend now includes a startup seed runner similar to the referenced `SeedDataRunner` pattern.
+
+Seed files are located at:
+
+- `src/main/resources/seed/users.json`
+- `src/main/resources/seed/projects.json`
+- `src/main/resources/seed/builds.json`
+- `src/main/resources/seed/test_plans.json`
+- `src/main/resources/seed/executions.json`
+- `src/main/resources/seed/audit_logs.json`
+- `src/main/resources/seed/requirements.json`
+- `src/main/resources/seed/suites.json`
+- `src/main/resources/seed/test_cases.json`
+- `src/main/resources/seed/defects.json`
+- `src/main/resources/seed/report_jobs.json`
+
+Runtime flags (`.env`):
+
+- `SEED_DATA_ENABLED` → enable/disable startup seed execution
+- `SEED_RESET_DB` → when `true`, truncates SQL tables and clears `StateStore` before insert
+- `SEED_STRICT_VALIDATION` → when `true`, startup fails if post-seed validation fails
+
+Notes:
+
+- SQL seeding targets tables from `V1__init.sql`: `users`, `projects`, `builds`, `test_plans`, `executions`, `audit_logs`.
+- In-memory seeding also fills `StateStore` structures used by API modules (`requirements`, `suites`, `test cases`, `defects`, `report jobs`).
+- Validation runs after load for both SQL and in-memory datasets.
+
 ## API Tests Implemented (Real HTTP, No Mocks)
 
 The project now includes real API integration tests using:
@@ -100,7 +130,7 @@ If using local compose from this README, use:
 - Port: `5432`
 - Database: `amazonqa`
 - User: `amazonqa`
-- Password: `amazonqa_password`
+- Password: `AmazonQA@2026!#`
 
 `psql` example connection:
 
@@ -138,7 +168,7 @@ services:
     environment:
       POSTGRES_DB: amazonqa
       POSTGRES_USER: amazonqa
-      POSTGRES_PASSWORD: amazonqa_password
+      POSTGRES_PASSWORD: "AmazonQA@2026!#"
     ports:
       - "5432:5432"
     volumes:

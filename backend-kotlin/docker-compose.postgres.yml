@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-amazonqa}
       POSTGRES_USER: ${POSTGRES_USER:-amazonqa}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-amazonqa_password}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-AmazonQA@2026!#}"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:

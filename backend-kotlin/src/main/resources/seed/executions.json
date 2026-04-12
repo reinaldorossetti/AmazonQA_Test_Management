@@ -1,0 +1,29 @@
+[
+  {
+    "id": "70000000-0000-0000-0000-000000000001",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "buildId": "50000000-0000-0000-0000-000000000001",
+    "status": "NOT_RUN",
+    "createdAt": "2026-04-12T11:20:00Z",
+    "updatedAt": "2026-04-12T11:20:00Z"
+  },
+  {
+    "id": "70000000-0000-0000-0000-000000000002",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "buildId": "50000000-0000-0000-0000-000000000001",
+    "status": "PASSED",
+    "actualResult": "Login succeeded with valid credentials",
+    "evidenceUrl": "https://evidence.amazonqa.local/executions/70000000-0000-0000-0000-000000000002",
+    "createdAt": "2026-04-12T11:22:00Z",
+    "updatedAt": "2026-04-12T11:23:00Z"
+  },
+  {
+    "id": "70000000-0000-0000-0000-000000000003",
+    "projectId": "10000000-0000-0000-0000-000000000002",
+    "buildId": "50000000-0000-0000-0000-000000000002",
+    "status": "BLOCKED",
+    "actualResult": "Dependent PIX service unavailable",
+    "createdAt": "2026-04-12T11:30:00Z",
+    "updatedAt": "2026-04-12T11:31:00Z"
+  }
+]

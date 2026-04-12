@@ -1,0 +1,16 @@
+[
+  {
+    "id": "80000000-0000-0000-0000-000000000001",
+    "projectId": "10000000-0000-0000-0000-000000000002",
+    "executionId": "70000000-0000-0000-0000-000000000003",
+    "title": "PIX integration timeout under load",
+    "status": "OPEN"
+  },
+  {
+    "id": "80000000-0000-0000-0000-000000000002",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "executionId": "70000000-0000-0000-0000-000000000001",
+    "title": "Intermittent UI freeze on login page",
+    "status": "IN_PROGRESS"
+  }
+]

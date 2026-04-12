@@ -1,0 +1,29 @@
+[
+  {
+    "id": "a0000000-0000-0000-0000-000000000001",
+    "eventType": "CREATE",
+    "actor": "admin@amazonqa.local",
+    "entityType": "USER",
+    "entityId": "00000000-0000-0000-0000-000000000001",
+    "metadata": "USER_CREATED",
+    "createdAt": "2026-04-12T11:40:00Z"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000002",
+    "eventType": "CREATE",
+    "actor": "admin@amazonqa.local",
+    "entityType": "PROJECT",
+    "entityId": "10000000-0000-0000-0000-000000000001",
+    "metadata": "PROJECT_CREATED",
+    "createdAt": "2026-04-12T11:41:00Z"
+  },
+  {
+    "id": "a0000000-0000-0000-0000-000000000003",
+    "eventType": "UPDATE",
+    "actor": "leader@amazonqa.local",
+    "entityType": "BUILD",
+    "entityId": "50000000-0000-0000-0000-000000000001",
+    "metadata": "BUILD_UPDATED",
+    "createdAt": "2026-04-12T11:42:00Z"
+  }
+]

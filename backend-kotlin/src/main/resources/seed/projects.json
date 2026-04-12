@@ -1,0 +1,16 @@
+[
+  {
+    "id": "10000000-0000-0000-0000-000000000001",
+    "name": "Amazon QA Seed Project",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-02T08:00:00Z",
+    "updatedAt": "2026-01-02T08:00:00Z"
+  },
+  {
+    "id": "10000000-0000-0000-0000-000000000002",
+    "name": "Amazon QA Mobile Checkout",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-02T08:05:00Z",
+    "updatedAt": "2026-01-02T08:05:00Z"
+  }
+]

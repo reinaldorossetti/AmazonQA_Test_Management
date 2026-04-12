@@ -1,0 +1,17 @@
+[
+  {
+    "id": "20000000-0000-0000-0000-000000000001",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "title": "REQ-AUTH-001 - User can login with valid credentials"
+  },
+  {
+    "id": "20000000-0000-0000-0000-000000000002",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "title": "REQ-AUTH-002 - MFA fallback flow is available"
+  },
+  {
+    "id": "20000000-0000-0000-0000-000000000003",
+    "projectId": "10000000-0000-0000-0000-000000000002",
+    "title": "REQ-CHECKOUT-001 - PIX checkout must be traceable"
+  }
+]

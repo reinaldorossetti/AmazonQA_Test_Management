@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:amazonqa}
     username: ${POSTGRES_USER:amazonqa}
-    password: ${POSTGRES_PASSWORD:amazonqa_password}
+    password: '${POSTGRES_PASSWORD:AmazonQA@2026!#}'
     driver-class-name: org.postgresql.Driver
   jpa:
     open-in-view: false
@@ -35,3 +35,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui
+
+seed:
+  enabled: ${SEED_DATA_ENABLED:false}
+  reset-on-startup: ${SEED_RESET_DB:false}
+  strict-validation: ${SEED_STRICT_VALIDATION:true}

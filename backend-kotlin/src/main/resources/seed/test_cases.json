@@ -1,0 +1,23 @@
+[
+  {
+    "id": "40000000-0000-0000-0000-000000000001",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "title": "TC-LOGIN-001 - Login with valid user",
+    "version": 1,
+    "executedBefore": true
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000002",
+    "projectId": "10000000-0000-0000-0000-000000000001",
+    "title": "TC-MFA-001 - OTP challenge flow",
+    "version": 1,
+    "executedBefore": false
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000003",
+    "projectId": "10000000-0000-0000-0000-000000000002",
+    "title": "TC-CHECKOUT-PIX-001 - Pay with PIX",
+    "version": 2,
+    "executedBefore": true
+  }
+]

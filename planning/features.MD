@@ -53,10 +53,6 @@ O **Amazon QA** é uma plataforma de gestão de testes orientada a rastreabilida
 *   **Anexos:**
     *   Abaixo dos campos iniciais, a interface oferece botões de acesso rápido para **+ Attach file** (Anexar arquivo) e **Attach link** (Anexar link).
 
-*   **Inteligência Artificial Integrada:**
-    *   No canto superior direito, há um painel de destaque chamado **"Write with AI"** (Escrever com IA).
-    *   Este recurso informa que o assistente alimentado por IA pode gerar ou aprimorar a descrição do caso de teste usando os detalhes do projeto, podendo ser acionado através do botão **"Start writing"**.
-
 *   **Corpo do Teste e Editor de Texto Rico:**
     *   A estruturação do teste é dividida em três blocos de texto principais: **Precondition** (Pré-condições), **Action** (Ações) e **Expected Result** (Resultado Esperado).
     *   **Barra de Ferramentas:** Ao digitar nestes campos, o sistema apresenta um menu de formatação avançada contendo opções para: negrito, itálico, sublinhado, tachado, aspas, listas com marcadores ou numeradas, links, emojis, inserção de imagens, vídeos, blocos de código (`</>`) e tabelas.

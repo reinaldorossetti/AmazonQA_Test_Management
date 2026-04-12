@@ -1,0 +1,73 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "fullName": "System Admin",
+    "email": "admin@amazonqa.local",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-01T10:00:00Z",
+    "updatedAt": "2026-01-01T10:00:00Z",
+    "lastLoginAt": "2026-04-12T09:30:00Z",
+    "roleAssignments": [
+      {
+        "role": "ADMIN",
+        "scopeType": "GLOBAL",
+        "assignedAt": "2026-01-01T10:00:00Z"
+      }
+    ],
+    "preferences": {
+      "theme": "dark",
+      "locale": "en-US"
+    }
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "fullName": "Project Leader",
+    "email": "leader@amazonqa.local",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-01T10:05:00Z",
+    "updatedAt": "2026-01-01T10:05:00Z",
+    "roleAssignments": [
+      {
+        "role": "LEADER",
+        "scopeType": "GLOBAL",
+        "assignedAt": "2026-01-01T10:05:00Z"
+      },
+      {
+        "role": "TESTER",
+        "scopeType": "PROJECT",
+        "scopeId": "10000000-0000-0000-0000-000000000001",
+        "assignedAt": "2026-01-01T10:06:00Z"
+      }
+    ]
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "fullName": "QA Tester",
+    "email": "tester@amazonqa.local",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-01T10:10:00Z",
+    "updatedAt": "2026-01-01T10:10:00Z",
+    "roleAssignments": [
+      {
+        "role": "TESTER",
+        "scopeType": "GLOBAL",
+        "assignedAt": "2026-01-01T10:10:00Z"
+      }
+    ]
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000004",
+    "fullName": "Read Only Guest",
+    "email": "guest@amazonqa.local",
+    "status": "ACTIVE",
+    "createdAt": "2026-01-01T10:15:00Z",
+    "updatedAt": "2026-01-01T10:15:00Z",
+    "roleAssignments": [
+      {
+        "role": "GUEST",
+        "scopeType": "GLOBAL",
+        "assignedAt": "2026-01-01T10:15:00Z"
+      }
+    ]
+  }
+]

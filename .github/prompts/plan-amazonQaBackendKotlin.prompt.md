@@ -6,7 +6,7 @@ Build the backend for **Amazon QA Test Case Management** using:
 
 - **Kotlin**
 - **Spring Boot 3.3+**
-- **Java SDK 23**
+- **Java SDK 23** - Targeting Java 21 for runtime compatibility while using Java 23 toolchain for development/build.
 - *Data Base PostgreSQL*
 - Project folder name: **`backend-kotlin`**
 - Virtual Threads nativas (Project Loom)
@@ -548,3 +548,82 @@ Audit:
 - **30 days**: foundation, security, RBAC, **user CRUD + access management**, domain model, test case module
 - **60 days**: requirements traceability + planning + execution
 - **90 days**: defect integration + reporting + hardening
+
+---
+
+## 14. Development Status Update (as-is codebase)
+
+> Updated based on current implementation in `backend-kotlin` (reference snapshot: 2026-04-12).
+
+### 14.1 Implementation status (done vs pending)
+
+| Module | Status | What is implemented | What is still pending / partial |
+|---|---|---|---|
+| Identity & RBAC | **Partially done** | Auth endpoints, user self endpoint, admin user CRUD, role assignment/removal, effective permissions, last-admin protection, method-level role guards with `@PreAuthorize`. | Auth is MVP (fixed bearer tokens), no real JWT signing/expiration/rotation pipeline, scoped role assignment exists but authorization is still mainly role-based by token principal. |
+| Projects | **Partially done** | Create/list/get/update, soft delete (`ARCHIVED` + `deletedAt/deletedBy`), restore, deletion blocked by active builds/runs. | Hard delete purge workflow not implemented; member management exists at service level but is not exposed in v1 endpoints. |
+| Requirements & Traceability | **Partially done** | CRUD + restore, import endpoint, coverage endpoint, traceability matrix endpoint. | Import currently returns simplified result (`errors=0`), no row-level error model; no explicit test-case link entity/rules yet. |
+| Suites & Test Cases | **Mostly done (MVP)** | Suite CRUD + restore + tree; test case CRUD + restore + bulk edit + search + version creation. | Versioning rule depends on `executedBefore` flag in memory model; no persistent relational version chain yet. |
+| Planning, Builds & Execution | **Mostly done (MVP)** | Build/plan CRUD (with draft-only deletion), run creation, execution status/evidence endpoints, close build, immutable closed build for updates, FAILED requires `actualResult` + evidence. | No explicit state machine abstraction yet (states are enum + guards in services). |
+| Defects & Jira integration | **Partially done** | Defect CRUD flows, create defect from execution, Jira config + verify endpoints present. | Jira integration is still stubbed/simplified (no real API calls, idempotency keys, or resilient retry orchestration). |
+| Reports & Metrics | **Partially done** | Operational metrics endpoint, coverage/execution report endpoints, report job lifecycle endpoints. | CSV/PDF export content is placeholder; report jobs are in-memory and not asynchronous with durable queue. |
+| Audit & Compliance | **Partially done** | Audit records for create/update/delete actions and audit listing endpoint. | No dedicated interceptor yet; deny events are not automatically persisted in all forbidden flows. |
+| Quality & Validation | **Done (for current scope)** | Contract mapping test, OpenAPI validation test, security policy tests, business rules tests, API integration suites by feature, Testcontainers smoke test, detekt/ktlint configured. | CI evidence and historical quality trend are outside this document scope. |
+
+### 14.2 Libraries and versions (current) + rationale
+
+Source of truth: `backend-kotlin/build.gradle.kts`.
+
+| Library / Tool | Planned baseline | Current version in project | Why this version / change rationale |
+|---|---|---|---|
+| Kotlin JVM + Spring + JPA plugins | Kotlin 2.x | `2.0.21` | Locked to stable Kotlin 2.x line for strong typing, modern compiler features, and Spring/Kotlin plugin compatibility. |
+| Spring Boot | 3.3+ | `3.5.6` | Kept above baseline to stay on newer Spring Boot patch line (security/bugfix cadence and platform stability). |
+| Spring Dependency Management | n/a | `1.1.7` | Standard BOM alignment for consistent transitive dependency resolution in Gradle Kotlin DSL builds. |
+| Java toolchain | Java 23 | Toolchain `23` + target/source `21` | Compile/runtime target remains broadly compatible (`21`) while preserving modern JDK toolchain (`23`) for development/build consistency. |
+| Springdoc OpenAPI | OpenAPI 3 required | `2.8.3` | Added to expose/validate OpenAPI docs via Spring Web MVC and keep API discoverability in Swagger UI. |
+| Flyway | Required | `flyway-core` + `flyway-database-postgresql` (managed by BOM) | Supports migration workflow for PostgreSQL environments. |
+| Detekt Gradle plugin | Required | `1.23.8` | Static analysis gate for Kotlin code quality in DoD. |
+| Ktlint Gradle plugin | Required | `12.2.0` | Formatting/lint consistency gate in CI/local workflow. |
+| Testcontainers | Required | `1.20.2` | Realistic DB smoke/integration checks with PostgreSQL containerized environment. |
+| MockK | Required | `1.13.13` | Kotlin-first mocking approach for tests. |
+| Mockito Kotlin | Optional support | `5.4.0` | Keeps interoperability with existing mock style and mixed test strategies. |
+| Rest-Assured | n/a in plan details | `5.5.0` | Real HTTP-level API assertions for integration suites. |
+| Allure plugin + JUnit adapter | n/a in baseline | Plugin `2.12.0`, adapter/report `2.30.0` | Added to produce richer automated test execution reports and support QA evidence. |
+| DataFaker | n/a in baseline | `2.4.2` | Generates dynamic test data for more robust integration scenarios. |
+
+### 14.3 Planned technologies not fully implemented yet
+
+1. **Redis cache**: planned in architecture, not yet wired in runtime dependencies/config.
+2. **Micrometer + OpenTelemetry tracing**: Actuator is present, but full telemetry/tracing instrumentation is still pending.
+3. **Resilience4j + RestClient strategy for Jira**: still pending; current Jira flow is simplified.
+4. **MDC contextual logging (`userId`, `projectId`)**: not yet implemented end-to-end in request filter/log pattern.
+5. **Persistent modular layers (`application/domain/infrastructure`)**: current implementation is feature-oriented with in-memory `StateStore`; persistence/repository layering is not complete yet.
+
+### 14.4 Current implementation logic (high-level)
+
+1. **Authentication/Authorization flow**
+	- Incoming bearer token is resolved in `JwtTokenAuthenticationFilter` and mapped to `TokenPrincipal` roles.
+	- Endpoint access is enforced by `@PreAuthorize` role checks.
+	- Domain/service-level protections complement endpoint-level checks (for example, last-admin and immutable states).
+
+2. **Critical business-rule guards**
+	- **Last admin protection** in `UserService`/`AccessService` blocks delete/deactivate/remove-role operations that would remove the final active global admin.
+	- **Build immutability**: once closed, updates/execution mutation are blocked with conflict domain errors.
+	- **Execution FAILED policy**: FAILED status requires both `actualResult` and evidence attachment.
+	- **Draft-only deletions**: build/test plan deletion only allowed in draft status.
+
+3. **Traceability lifecycle (MVP shape)**
+	- Requirement/suite/test-case/defect entities use soft-delete semantics for history safety.
+	- Test case versioning creates a new record when prior execution history is present (`executedBefore` guard).
+	- Report and metrics APIs expose operational summaries and job orchestration in a simplified in-memory model.
+
+4. **Audit and error model**
+	- Services emit create/update/delete audit events to a centralized store.
+	- Exceptions are normalized by `GlobalExceptionHandler` using a consistent envelope (`code`, `field`, `message`, `traceId`).
+
+### 14.5 Next recommended execution order (to close MVP gaps)
+
+1. Implement real JWT lifecycle (issuer/signature/expiration/refresh rotation + revocation strategy).
+2. Replace in-memory `StateStore` with repository + persistence model (PostgreSQL/JPA/Flyway-backed).
+3. Add Resilience4j + RestClient for Jira integration with idempotency keys and retry/backoff policies.
+4. Implement MDC request context propagation (`traceId`, `userId`, `projectId`) and structured logs.
+5. Add real report generation (CSV/PDF) and asynchronous durable job processing.
