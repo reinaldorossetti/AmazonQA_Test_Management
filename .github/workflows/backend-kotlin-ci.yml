@@ -14,12 +14,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "github-pages"
+  group: "gh-pages-reports"
   cancel-in-progress: true
 
 jobs:
@@ -102,32 +100,30 @@ jobs:
           name: backend-kotlin-allure-report
           path: backend-kotlin/build/reports/allure-report/allureReport/
 
-      - name: Prepare GitHub Pages bundle (hub + API + unit)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+      - name: Prepare reports bundle (hub + API + unit)
+        if: always() && github.event_name == 'push'
         run: |
-          rm -rf backend-kotlin/build/pages
-          mkdir -p backend-kotlin/build/pages/api
-          mkdir -p backend-kotlin/build/pages/unit
+          rm -rf tests-report
+          mkdir -p tests-report/api
+          mkdir -p tests-report/unit
 
-          cp backend-kotlin/docs/api/test-reports-hub.html backend-kotlin/build/pages/index.html
-          cp -r backend-kotlin/build/reports/allure-report/allureReport/. backend-kotlin/build/pages/api/
-          cp -r backend-kotlin/build/reports/tests/unitTest/. backend-kotlin/build/pages/unit/
+          cp backend-kotlin/docs/api/test-reports-hub.html tests-report/index.html
+          cp -r backend-kotlin/build/reports/allure-report/allureReport/. tests-report/api/
+          cp -r backend-kotlin/build/reports/tests/unitTest/. tests-report/unit/
 
-      - name: Upload reports hub to GitHub Pages artifact
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload reports bundle artifact
+        if: always() && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
         with:
-          path: backend-kotlin/build/pages/
+          name: backend-kotlin-gh-pages-bundle
+          path: tests-report/
 
-  deploy-pages:
-    name: Deploy reports hub to GitHub Pages
-    needs: build-seed-test
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy Test reports to gh-pages
+        if: always() && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: tests-report
+          destination_dir: tests-report
+          keep_files: true

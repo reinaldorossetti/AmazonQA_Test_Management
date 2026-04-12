@@ -126,13 +126,14 @@ From `backend-kotlin` folder:
 CI/CD publication:
 
 - Workflow: `.github/workflows/backend-kotlin-ci.yml`
-- On `push` to `main`, the pipeline publishes a reports hub page to GitHub Pages.
-- GitHub Pages entrypoint: `index.html` (hub with options API and Unit tests).
-- API option points to Allure report (`./api/index.html`).
-- Unit option points to Gradle HTML report (`./unit/index.html`).
+- On `push` to `main`, the pipeline publishes test reports to branch `gh-pages` using `peaceiris/actions-gh-pages`.
+- Published base directory on `gh-pages`: `tests-report/`.
+- Hub entrypoint: `tests-report/index.html` (options API and Unit tests).
+- API option points to Allure report (`tests-report/api/index.html`).
+- Unit option points to Gradle HTML report (`tests-report/unit/index.html`).
 - On PRs, the Allure report is kept as workflow artifact (`backend-kotlin-allure-report`).
 
-> If this is the first deployment, enable **GitHub Pages** in repository settings with source set to **GitHub Actions**.
+> If this is the first deployment, enable **GitHub Pages** in repository settings with source set to branch **gh-pages** (root).
 
 ## How to Start the Application
 

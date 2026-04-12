@@ -130,19 +130,19 @@ Essa task executa automaticamente:
 
 ### Publicação automática no GitHub Pages (CI)
 
-O workflow `.github/workflows/backend-kotlin-ci.yml` publica o relatório Allure no GitHub Pages quando há `push` na branch `main`.
+O workflow `.github/workflows/backend-kotlin-ci.yml` publica os relatórios no branch `gh-pages` quando há `push` na branch `main`.
 
 - Job de build/testes gera `apiAllureReport`
 - Artefato Allure também é salvo no workflow (`backend-kotlin-allure-report`)
-- Job de deploy publica para GitHub Pages via `actions/deploy-pages`
+- Job de deploy publica para `gh-pages` via `peaceiris/actions-gh-pages`
 - A página inicial publicada é um hub HTML com 2 opções:
-	- `API` → `./api/index.html` (Allure)
-	- `Unitários` → `./unit/index.html` (Gradle Test Report)
+	- `API` → `tests-report/api/index.html` (Allure)
+	- `Unitários` → `tests-report/unit/index.html` (Gradle Test Report)
 
 Para funcionar na primeira vez:
 
 1. Vá em **Settings > Pages** do repositório
-2. Em **Build and deployment / Source**, selecione **GitHub Actions**
+2. Em **Build and deployment / Source**, selecione branch **gh-pages** (root)
 
 ### Abrir relatório no navegador
 
