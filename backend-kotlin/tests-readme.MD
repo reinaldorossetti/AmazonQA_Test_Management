@@ -138,6 +138,7 @@ O workflow `.github/workflows/backend-kotlin-ci.yml` publica os relatórios no b
 - A página inicial publicada é um hub HTML com 2 opções:
 	- `API` → `tests-report/api/index.html` (Allure)
 	- `Unitários` → `tests-report/unit/index.html` (Gradle Test Report)
+- URL pública do hub: https://reinaldorossetti.github.io/AmazonQA_Test_Management/tests-report/index.html
 
 Para funcionar na primeira vez:
 

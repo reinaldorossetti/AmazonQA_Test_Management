@@ -131,6 +131,7 @@ CI/CD publication:
 - Hub entrypoint: `tests-report/index.html` (options API and Unit tests).
 - API option points to Allure report (`tests-report/api/index.html`).
 - Unit option points to Gradle HTML report (`tests-report/unit/index.html`).
+- Public URL (GitHub Pages): https://reinaldorossetti.github.io/AmazonQA_Test_Management/tests-report/index.html
 - On PRs, the Allure report is kept as workflow artifact (`backend-kotlin-allure-report`).
 
 > If this is the first deployment, enable **GitHub Pages** in repository settings with source set to branch **gh-pages** (root).
