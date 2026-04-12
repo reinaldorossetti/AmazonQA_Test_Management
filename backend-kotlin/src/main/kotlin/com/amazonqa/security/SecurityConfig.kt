@@ -3,6 +3,7 @@ package com.amazonqa.security
 import com.amazonqa.common.api.ApiEnvelope
 import com.amazonqa.common.api.ApiError
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableMethodSecurity
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class SecurityConfig(
     private val jwtTokenAuthenticationFilter: JwtTokenAuthenticationFilter,
     private val objectMapper: ObjectMapper,
