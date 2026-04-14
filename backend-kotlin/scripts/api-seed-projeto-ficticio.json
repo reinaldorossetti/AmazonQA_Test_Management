@@ -1,0 +1,83 @@
+{
+  "project": {
+    "name": "Projeto Ficticio - Loja Aurora QA"
+  },
+  "requirements": [
+    {
+      "key": "REQ-LOGIN",
+      "title": "RF-001 - Usuario deve autenticar com e-mail e senha validos"
+    },
+    {
+      "key": "REQ-CHECKOUT",
+      "title": "RF-014 - Checkout deve concluir pagamento com cartao"
+    },
+    {
+      "key": "REQ-PEDIDO",
+      "title": "RF-021 - Sistema deve exibir historico de pedidos"
+    }
+  ],
+  "suites": [
+    {
+      "name": "Autenticacao"
+    },
+    {
+      "name": "Checkout"
+    },
+    {
+      "name": "Minha Conta"
+    }
+  ],
+  "testCases": [
+    {
+      "title": "Login com credenciais validas",
+      "testId": "AUR-001",
+      "priority": "High",
+      "bugSeverity": "Major",
+      "tagsKeywords": "@login,@happy-path",
+      "requirementKey": "REQ-LOGIN",
+      "executionType": "Manual",
+      "testCaseStatus": "Ready for Review",
+      "platform": "Web",
+      "testEnvironment": "Staging",
+      "preconditions": "Usuario ativo e nao bloqueado no sistema.",
+      "actions": "Informar e-mail e senha validos e clicar em Entrar.",
+      "expectedResult": "Usuario autenticado e redirecionado para o dashboard.",
+      "executionStatus": "Not Run",
+      "notes": "Cenário base de autenticação."
+    },
+    {
+      "title": "Finalizar compra com cartao de credito",
+      "testId": "AUR-002",
+      "priority": "Critical",
+      "bugSeverity": "Critical",
+      "tagsKeywords": "@checkout,@regressao",
+      "requirementKey": "REQ-CHECKOUT",
+      "executionType": "Manual",
+      "testCaseStatus": "Draft",
+      "platform": "Web",
+      "testEnvironment": "Staging",
+      "preconditions": "Carrinho com produto disponivel e usuario autenticado.",
+      "actions": "Selecionar cartão válido e confirmar pedido.",
+      "expectedResult": "Pedido gerado com status aprovado e confirmação exibida.",
+      "executionStatus": "Not Run",
+      "notes": "Validar também eventos de analytics no frontend."
+    },
+    {
+      "title": "Visualizar historico de pedidos",
+      "testId": "AUR-003",
+      "priority": "Medium",
+      "bugSeverity": "Minor",
+      "tagsKeywords": "@minha-conta,@pedidos",
+      "requirementKey": "REQ-PEDIDO",
+      "executionType": "Manual",
+      "testCaseStatus": "Draft",
+      "platform": "Web",
+      "testEnvironment": "Staging",
+      "preconditions": "Usuario com pelo menos um pedido concluido.",
+      "actions": "Acessar menu Minha Conta > Pedidos.",
+      "expectedResult": "Lista de pedidos exibida com data, valor e status.",
+      "executionStatus": "Not Run",
+      "notes": "Verificar ordenação por data decrescente."
+    }
+  ]
+}

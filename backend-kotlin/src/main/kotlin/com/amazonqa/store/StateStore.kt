@@ -100,14 +100,23 @@ data class TestCaseRecord(
     var preconditions: String? = null,
     var actions: String? = null,
     var expectedResult: String? = null,
-    var actualResult: String? = null,
     var executionStatus: String = "Not Run",
     var notes: String? = null,
-    var customFields: String? = null,
     var attachments: String? = null,
     var version: Int,
     var deletedAt: Instant? = null,
     var executedBefore: Boolean = false,
+)
+
+data class TestCaseAttachmentRecord(
+    val id: UUID,
+    val projectId: UUID,
+    val testCaseId: UUID,
+    val fileName: String,
+    val contentType: String,
+    val fileSize: Long,
+    val fileData: ByteArray,
+    val createdAt: Instant = Instant.now(),
 )
 
 data class BuildRecord(
@@ -173,6 +182,7 @@ class StateStore {
     val requirements: MutableMap<UUID, RequirementRecord> = ConcurrentHashMap()
     val suites: MutableMap<UUID, SuiteRecord> = ConcurrentHashMap()
     val testCases: MutableMap<UUID, TestCaseRecord> = ConcurrentHashMap()
+    val testCaseAttachments: MutableMap<UUID, TestCaseAttachmentRecord> = ConcurrentHashMap()
     val builds: MutableMap<UUID, BuildRecord> = ConcurrentHashMap()
     val plans: MutableMap<UUID, PlanRecord> = ConcurrentHashMap()
     val executions: MutableMap<UUID, ExecutionRecord> = ConcurrentHashMap()

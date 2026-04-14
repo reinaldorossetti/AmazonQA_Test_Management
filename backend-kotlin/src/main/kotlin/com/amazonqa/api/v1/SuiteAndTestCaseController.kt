@@ -4,18 +4,24 @@ import com.amazonqa.common.api.ApiEnvelope
 import com.amazonqa.common.api.ResponseFactory
 import com.amazonqa.testcase.CreateTestCasePayload
 import com.amazonqa.testcase.TestCaseService
+import com.amazonqa.testcase.UpdateTestCasePayload
 import com.amazonqa.testsuite.SuiteService
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 @RestController
@@ -92,10 +98,8 @@ class SuiteAndTestCaseController(
                     preconditions = request.preconditions,
                     actions = request.actions,
                     expectedResult = request.expectedResult,
-                    actualResult = request.actualResult,
                     executionStatus = request.executionStatus,
                     notes = request.notes,
-                    customFields = request.customFields,
                     attachments = request.attachments,
                 ),
             ),
@@ -122,7 +126,31 @@ class SuiteAndTestCaseController(
         @PathVariable testCaseId: UUID,
         @RequestBody request: UpdateTestCaseRequest,
         servletRequest: HttpServletRequest,
-    ): ApiEnvelope<Any> = ResponseFactory.ok(testCaseService.updateTestCase(testCaseId, request.title), servletRequest)
+    ): ApiEnvelope<Any> =
+        ResponseFactory.ok(
+            testCaseService.updateTestCase(
+                testCaseId,
+                UpdateTestCasePayload(
+                    title = request.title,
+                    testId = request.testId,
+                    priority = request.priority,
+                    bugSeverity = request.bugSeverity,
+                    tagsKeywords = request.tagsKeywords,
+                    requirementLink = request.requirementLink,
+                    executionType = request.executionType,
+                    testCaseStatus = request.testCaseStatus,
+                    platform = request.platform,
+                    testEnvironment = request.testEnvironment,
+                    preconditions = request.preconditions,
+                    actions = request.actions,
+                    expectedResult = request.expectedResult,
+                    executionStatus = request.executionStatus,
+                    notes = request.notes,
+                    attachments = request.attachments,
+                ),
+            ),
+            servletRequest,
+        )
 
     @DeleteMapping("/test-cases/{testCaseId}")
     @PreAuthorize("hasAnyRole('ADMIN','LEADER')")
@@ -161,6 +189,42 @@ class SuiteAndTestCaseController(
         @RequestParam query: String,
         servletRequest: HttpServletRequest,
     ): ApiEnvelope<Any> = ResponseFactory.ok(testCaseService.search(projectId, query), servletRequest)
+
+    @PostMapping("/test-cases/{testCaseId}/attachments", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PreAuthorize("hasAnyRole('ADMIN','LEADER','TESTER')")
+    fun uploadTestCaseAttachment(
+        @PathVariable projectId: UUID,
+        @PathVariable testCaseId: UUID,
+        @RequestPart("file") file: MultipartFile,
+        servletRequest: HttpServletRequest,
+    ): ApiEnvelope<Any> =
+        ResponseFactory.ok(
+            testCaseService.uploadAttachment(
+                projectId = projectId,
+                testCaseId = testCaseId,
+                fileName = file.originalFilename,
+                contentType = file.contentType,
+                fileData = file.bytes,
+            ),
+            servletRequest,
+        )
+
+    @GetMapping("/test-cases/{testCaseId}/attachments/{attachmentId}/download")
+    @PreAuthorize("hasAnyRole('ADMIN','LEADER','TESTER','GUEST')")
+    fun downloadTestCaseAttachment(
+        @PathVariable projectId: UUID,
+        @PathVariable testCaseId: UUID,
+        @PathVariable attachmentId: UUID,
+    ): ResponseEntity<ByteArray> {
+        val attachment = testCaseService.downloadAttachment(projectId, testCaseId, attachmentId)
+
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType(attachment.contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${attachment.fileName}\"")
+            .header(HttpHeaders.CONTENT_LENGTH, attachment.fileSize.toString())
+            .body(attachment.fileData)
+    }
 }
 
 data class CreateSuiteRequest(val name: String)
@@ -181,14 +245,29 @@ data class CreateTestCaseRequest(
     val preconditions: String? = null,
     val actions: String? = null,
     val expectedResult: String? = null,
-    val actualResult: String? = null,
     val executionStatus: String? = null,
     val notes: String? = null,
-    val customFields: String? = null,
     val attachments: String? = null,
 )
 
-data class UpdateTestCaseRequest(val title: String? = null)
+data class UpdateTestCaseRequest(
+    val title: String? = null,
+    val testId: String? = null,
+    val priority: String? = null,
+    val bugSeverity: String? = null,
+    val tagsKeywords: String? = null,
+    val requirementLink: String? = null,
+    val executionType: String? = null,
+    val testCaseStatus: String? = null,
+    val platform: String? = null,
+    val testEnvironment: String? = null,
+    val preconditions: String? = null,
+    val actions: String? = null,
+    val expectedResult: String? = null,
+    val executionStatus: String? = null,
+    val notes: String? = null,
+    val attachments: String? = null,
+)
 
 data class VersionTestCaseRequest(val title: String)
 

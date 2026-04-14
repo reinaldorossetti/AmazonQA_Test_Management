@@ -10,6 +10,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -59,6 +60,20 @@ class GlobalExceptionHandler {
                             field = fieldError?.field,
                             message = fieldError?.defaultMessage ?: "Invalid payload",
                         ),
+                    traceId = request.requestId(),
+                ),
+            )
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException::class)
+    fun handleUploadSizeExceeded(
+        request: HttpServletRequest,
+    ): ResponseEntity<ApiEnvelope<Nothing>> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                ApiEnvelope(
+                    error = ApiError(code = "ATTACHMENT_TOO_LARGE", message = "File size must be at most 1MB"),
                     traceId = request.requestId(),
                 ),
             )

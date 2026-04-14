@@ -15,14 +15,8 @@
     "preconditions": "Usuário ativo cadastrado no sistema e página de login disponível.",
     "actions": "Dado que o usuário está na tela de login; Quando informa email e senha válidos; Então deve acessar o dashboard.",
     "expectedResult": "Login concluído com redirecionamento para dashboard e sessão autenticada.",
-    "actualResult": "Login realizado com sucesso e dashboard exibido.",
     "executionStatus": "Passed",
     "notes": "Executado na release 2026.04-RC1 sem bloqueios.",
-    "customFields": {
-      "component": "auth",
-      "automationCandidate": true,
-      "owner": "qa-team"
-    },
     "attachments": "https://evidence.amazonqa.local/testcases/AMQA-001/screenshot.png",
     "version": 1,
     "executedBefore": true
@@ -43,14 +37,8 @@
     "preconditions": "Conta com MFA habilitado e provedor OTP operacional.",
     "actions": "Dado login válido; Quando o usuário informa OTP correto; Então autenticação é concluída.",
     "expectedResult": "Usuário autenticado somente após validação OTP.",
-    "actualResult": null,
     "executionStatus": "Not Run",
     "notes": "Aguardando revisão técnica antes de execução em produção.",
-    "customFields": {
-      "component": "security",
-      "automationCandidate": true,
-      "risk": "high"
-    },
     "attachments": "https://evidence.amazonqa.local/testcases/AMQA-002/spec.md",
     "version": 1,
     "executedBefore": false
@@ -71,14 +59,8 @@
     "preconditions": "Carrinho com itens válidos e gateway PIX disponível.",
     "actions": "Dado checkout iniciado; Quando cliente seleciona PIX e confirma; Então QR Code deve ser gerado.",
     "expectedResult": "Ordem criada com status pendente de pagamento e QR Code exibido.",
-    "actualResult": "Falha ao gerar QR Code para alguns bancos parceiros.",
     "executionStatus": "Failed",
     "notes": "Bloqueio parcial na release 2026.04-RC2; rework planejado.",
-    "customFields": {
-      "component": "checkout",
-      "automationCandidate": false,
-      "defectId": "DEF-PIX-4431"
-    },
     "attachments": "https://evidence.amazonqa.local/testcases/AMQA-101/error-log.txt",
     "version": 2,
     "executedBefore": true

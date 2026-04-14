@@ -94,6 +94,10 @@ paths:
     post: {summary: Restore test case, responses: {'200': {description: OK}}}
   /projects/{projectId}/test-cases/{testCaseId}/versions:
     post: {summary: Create test case version, responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/{testCaseId}/attachments:
+    post: {summary: Upload test case attachment (image/xls/xlsx/csv up to 1MB), responses: {'200': {description: OK}}}
+  /projects/{projectId}/test-cases/{testCaseId}/attachments/{attachmentId}/download:
+    get: {summary: Download test case attachment from database, responses: {'200': {description: OK}}}
   /projects/{projectId}/test-cases/bulk:
     patch: {summary: Bulk update test cases, responses: {'200': {description: OK}}}
   /projects/{projectId}/builds:

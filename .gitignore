@@ -146,3 +146,7 @@ backend-kotlin/build/
 backend-kotlin/build/reports/
 backend-kotlin/build/allure/
 backend-kotlin/build/allure-results/
+
+# Build and binary directories (all modules)
+**/build/
+**/bin/

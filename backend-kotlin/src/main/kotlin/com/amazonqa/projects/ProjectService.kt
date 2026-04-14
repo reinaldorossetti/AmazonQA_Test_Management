@@ -7,8 +7,11 @@ import com.amazonqa.planning.BuildService
 import com.amazonqa.store.ProjectRecord
 import com.amazonqa.store.ProjectStatus
 import com.amazonqa.store.StateStore
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.http.HttpStatus
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
@@ -18,6 +21,7 @@ class ProjectService(
     private val buildService: BuildService,
     private val executionService: ExecutionService,
     private val auditService: AuditService,
+    private val jdbcTemplateProvider: ObjectProvider<JdbcTemplate>,
 ) {
     private val membersByProject: MutableMap<UUID, MutableSet<String>> = mutableMapOf()
 
@@ -32,6 +36,7 @@ class ProjectService(
                 updatedAt = now,
             )
         stateStore.projects[project.id] = project
+        upsertProjectInPostgres(project)
         auditService.logCreate("PROJECT", project.id.toString(), "PROJECT_CREATED")
         return project
     }
@@ -55,6 +60,7 @@ class ProjectService(
         }
         name?.let { project.name = it }
         project.updatedAt = Instant.now()
+        upsertProjectInPostgres(project)
         auditService.logUpdate("PROJECT", project.id.toString(), "PROJECT_UPDATED")
         return project
     }
@@ -71,6 +77,7 @@ class ProjectService(
         project.deletedAt = Instant.now()
         project.deletedBy = deletedBy
         project.updatedAt = Instant.now()
+        upsertProjectInPostgres(project)
         auditService.logDelete("PROJECT", project.id.toString(), "PROJECT_DELETED")
         return project
     }
@@ -81,6 +88,7 @@ class ProjectService(
         project.deletedAt = null
         project.deletedBy = null
         project.updatedAt = Instant.now()
+        upsertProjectInPostgres(project)
         auditService.logUpdate("PROJECT", project.id.toString(), "PROJECT_RESTORED")
         return project
     }
@@ -105,5 +113,36 @@ class ProjectService(
         members.remove(userEmail)
         auditService.logUpdate("PROJECT", projectId.toString(), "MEMBER_REMOVED:$userEmail")
         return members
+    }
+
+    private fun upsertProjectInPostgres(project: ProjectRecord) {
+        val jdbcTemplate = jdbcTemplateProvider.ifAvailable ?: return
+
+        jdbcTemplate.update(
+            """
+            INSERT INTO projects (
+                id,
+                name,
+                status,
+                deleted_at,
+                deleted_by,
+                created_at,
+                updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                status = EXCLUDED.status,
+                deleted_at = EXCLUDED.deleted_at,
+                deleted_by = EXCLUDED.deleted_by,
+                updated_at = EXCLUDED.updated_at
+            """.trimIndent(),
+            project.id,
+            project.name,
+            project.status.name,
+            project.deletedAt?.let { Timestamp.from(it) },
+            project.deletedBy,
+            Timestamp.from(project.createdAt),
+            Timestamp.from(project.updatedAt),
+        )
     }
 }

@@ -214,10 +214,8 @@ class SeedDataRunner(
                     preconditions = row.preconditions,
                     actions = row.actions,
                     expectedResult = row.expectedResult,
-                    actualResult = row.actualResult,
                     executionStatus = row.executionStatus,
                     notes = row.notes,
-                    customFields = row.customFields?.let { objectMapper.writeValueAsString(it) },
                     attachments = row.attachments,
                     version = row.version,
                     deletedAt = row.deletedAt?.toInstant(),
@@ -377,7 +375,6 @@ class SeedDataRunner(
         }
 
         seedData.testCases.forEach { row ->
-            val customFieldsJson = row.customFields?.let { objectMapper.writeValueAsString(it) }
             jdbcTemplate.update(
                 """
                 INSERT INTO test_cases (
@@ -396,16 +393,14 @@ class SeedDataRunner(
                     preconditions,
                     actions,
                     expected_result,
-                    actual_result,
                     execution_status,
                     notes,
-                    custom_fields,
                     attachments,
                     version,
                     deleted_at,
                     executed_before,
                     updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?, ?, ?, ?, NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                 ON CONFLICT (id) DO UPDATE SET
                     project_id = EXCLUDED.project_id,
                     test_id = EXCLUDED.test_id,
@@ -421,10 +416,8 @@ class SeedDataRunner(
                     preconditions = EXCLUDED.preconditions,
                     actions = EXCLUDED.actions,
                     expected_result = EXCLUDED.expected_result,
-                    actual_result = EXCLUDED.actual_result,
                     execution_status = EXCLUDED.execution_status,
                     notes = EXCLUDED.notes,
-                    custom_fields = EXCLUDED.custom_fields,
                     attachments = EXCLUDED.attachments,
                     version = EXCLUDED.version,
                     deleted_at = EXCLUDED.deleted_at,
@@ -446,10 +439,8 @@ class SeedDataRunner(
                 row.preconditions,
                 row.actions,
                 row.expectedResult,
-                row.actualResult,
                 row.executionStatus,
                 row.notes,
-                customFieldsJson,
                 row.attachments,
                 row.version,
                 row.deletedAt?.toTimestamp(),
@@ -693,10 +684,8 @@ data class TestCaseSeed(
     val preconditions: String? = null,
     val actions: String? = null,
     val expectedResult: String? = null,
-    val actualResult: String? = null,
     val executionStatus: String = "Not Run",
     val notes: String? = null,
-    val customFields: Map<String, Any>? = null,
     val attachments: String? = null,
     val version: Int,
     val deletedAt: String? = null,
